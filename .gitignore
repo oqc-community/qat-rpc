@@ -3,6 +3,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Swap files
+**/*.sw[nop]
+
+# Log files
+*.log
+logs/
+
+# PyCharm
+.idea/
+
 # C extensions
 *.so
 
