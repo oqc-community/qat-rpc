@@ -2,10 +2,9 @@ from time import time
 from typing import Union
 
 import zmq
-
 from qat.purr.backends.echo import get_default_echo_hardware
-from qat.purr.compiler.hardware_models import QuantumHardwareModel
 from qat.purr.compiler.config import CompilerConfig
+from qat.purr.compiler.hardware_models import QuantumHardwareModel
 from qat.purr.compiler.runtime import get_runtime
 from qat.qat import execute_with_metrics
 
@@ -56,7 +55,7 @@ class ZMQBase:
 
 
 class ZMQServer(ZMQBase):
-    def __init__(self, hardware: QuantumHardwareModel=None):
+    def __init__(self, hardware: QuantumHardwareModel = None):
         super().__init__(zmq.REP)
         self._socket.bind(self.address)
         self._hardware = hardware or get_default_echo_hardware(qubit_count=32)
@@ -91,7 +90,7 @@ class ZMQClient(ZMQBase):
         self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self.address)
 
-    def execute_task(self, program: str, config: Union[CompilerConfig, str]=None):
+    def execute_task(self, program: str, config: Union[CompilerConfig, str] = None):
         self.result = None
         if isinstance(config, str):
             # Verify config string is valid before submitting.

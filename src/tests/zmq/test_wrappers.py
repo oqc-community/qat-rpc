@@ -1,6 +1,6 @@
-import pytest
 import threading
 
+import pytest
 from qat.purr.compiler.config import CompilerConfig
 
 from qat_rpc.zmq.wrappers import ZMQClient, ZMQServer
@@ -61,18 +61,18 @@ def test_two_zmq_clients():
     config0.repeats = 100
     thread00 = threading.Thread(
         target=execute_and_check_result,
-        args=(client0, program, config0, {"c": { "00": 100}}),
+        args=(client0, program, config0, {"c": {"00": 100}}),
     )
     thread01 = threading.Thread(
         target=execute_and_check_result,
-        args=(client0, program, config0, {"c": { "00": 100}}),
+        args=(client0, program, config0, {"c": {"00": 100}}),
     )
     config1 = CompilerConfig()
     config1.results_format.binary_count()
     config1.repeats = 1000
     thread10 = threading.Thread(
         target=execute_and_check_result,
-        args=(client1, program, config1, {"c": { "00": 1000}}),
+        args=(client1, program, config1, {"c": {"00": 1000}}),
     )
     thread00.start()
     thread01.start()
