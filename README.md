@@ -15,6 +15,10 @@ We use [poetry](https://python-poetry.org/) for dependency management and run on
 [Python 3.8+](https://www.python.org/downloads/).
 Once both of these are installed run this in the root folder to install all the dependencies that you need: `poetry install`
 
+> If you are contributing to the project we recommend that you also run
+> `poetry run pre-commit install`
+> to enable pre-commit checks.
+
 ### Contributing
 
 To take the first steps towards contributing to QAT-RPC, visit our
