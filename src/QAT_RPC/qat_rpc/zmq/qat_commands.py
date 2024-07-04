@@ -3,8 +3,9 @@ from pathlib import Path
 
 from qat_rpc.zmq.wrappers import ZMQClient
 
-
-parser = argparse.ArgumentParser(prog="QAT submission service", description="Submit your QASM or QIR program to QAT.")
+parser = argparse.ArgumentParser(
+    prog="QAT submission service", description="Submit your QASM or QIR program to QAT."
+)
 parser.add_argument("program", type=str, help="Program string or path to program file.")
 parser.add_argument("--config", type=str, help="Serialised CompilerConfig json")
 

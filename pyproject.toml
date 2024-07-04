@@ -17,6 +17,10 @@ pyzmq = "^25.1.0"
 [tool.poetry.group.dev.dependencies]
 coverage = "^6.3.2"
 pytest-cov = "~=2.10.1"
+autoflake = "^2.2.0"
+isort = "^5.13.2"
+black = "24.2.0"
+pre-commit = "^3.2.0"
 
 [tool.poetry.group.licenses]
 optional = true
@@ -24,7 +28,25 @@ optional = true
 [tool.poetry.group.licenses.dependencies]
 pip-licenses = "^3.5.3"
 
+[tool.autoflake]
+remove-all-unused-imports = true
+ignore-init-module-imports = true
+ignore-pass-after-docstring = true
+in-place = true
+recursive = true
+
+[tool.isort]
+py_version = 39
+profile = "black"
+line_length = 92
+known_first_party = ["qat_rpc"]
+
+[tool.black]
+line-length = 92
+target-version = ["py38", "py39", "py310"]
+
 [tool.poetry.scripts]
+format-code = "poetry_scripts:format_code"
 qat_comexe="qat_rpc.zmq.qat_commands:qat_run"
 
 [build-system]
