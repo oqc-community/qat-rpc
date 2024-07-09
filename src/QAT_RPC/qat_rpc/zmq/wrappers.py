@@ -1,5 +1,5 @@
 from time import time
-from typing import Union
+from typing import Optional, Union
 
 import zmq
 from qat.purr.backends.echo import get_default_echo_hardware
@@ -7,6 +7,8 @@ from qat.purr.compiler.config import CompilerConfig
 from qat.purr.compiler.hardware_models import QuantumHardwareModel
 from qat.purr.compiler.runtime import get_runtime
 from qat.qat import execute_with_metrics
+
+from qat_rpc.utils.metrics import MetricExporter
 
 
 class ZMQBase:
@@ -55,8 +57,13 @@ class ZMQBase:
 
 
 class ZMQServer(ZMQBase):
-    def __init__(self, hardware: QuantumHardwareModel = None):
+    def __init__(
+        self,
+        hardware: Optional[QuantumHardwareModel] = None,
+        metric_exporter: Optional[MetricExporter] = None,
+    ):
         super().__init__(zmq.REP)
+        self._metric = metric_exporter
         self._socket.bind(self.address)
         self._hardware = hardware or get_default_echo_hardware(qubit_count=32)
         self._engine = get_runtime(self._hardware).engine
@@ -68,6 +75,8 @@ class ZMQServer(ZMQBase):
 
     def run(self):
         self._running = True
+        with self._metric.receiver_status() as metric:
+            metric.succeed()
         while self._running and not self._socket.closed:
             msg = self._check_recieved()
             if msg is not None:
@@ -76,12 +85,18 @@ class ZMQServer(ZMQBase):
                     config = CompilerConfig.create_from_json(msg[1])
                     result, metrics = execute_with_metrics(program, self._engine, config)
                     reply = {"results": result, "execution_metrics": metrics}
+                    with self._metric.executed_messages() as executed:
+                        executed.increment()
                 except Exception as e:
                     reply = {"Exception": repr(e)}
+                    with self._metric.failed_messages() as failed:
+                        failed.increment()
                 self._send(reply)
 
     def stop(self):
         self._running = False
+        with self._metric.receiver_status() as metric:
+            metric.fail()
 
 
 class ZMQClient(ZMQBase):
