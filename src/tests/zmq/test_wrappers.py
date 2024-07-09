@@ -3,12 +3,16 @@ import threading
 import pytest
 from qat.purr.compiler.config import CompilerConfig
 
+from qat_rpc.utils.constants import PROMETHEUS_PORT
+from qat_rpc.utils.metrics import MetricExporter, PrometheusReceiver
 from qat_rpc.zmq.wrappers import ZMQClient, ZMQServer
 
 
 @pytest.fixture(scope="module", autouse=True)
 def server():
-    server = ZMQServer()
+    server = ZMQServer(
+        metric_exporter=MetricExporter(backend=PrometheusReceiver(PROMETHEUS_PORT))
+    )
     server_thread = threading.Thread(target=server.run, daemon=True)
     server_thread.start()
 
