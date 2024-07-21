@@ -1,14 +1,26 @@
 import threading
 
+from importlib.metadata import version
+
 import pytest
 from qat.purr.compiler.config import CompilerConfig
+from qat.purr.backends.echo import get_default_echo_hardware, add_direction_couplings_to_hardware
 
-from qat_rpc.zmq.wrappers import ZMQClient, ZMQServer
+
+from qat_rpc.zmq.wrappers import ZMQClient, ZMQServer, Messages
+
+qubit_count = 8
+qpu_coupligns = [(i, j) for i in range(qubit_count) for j in range(qubit_count)]
 
 
 @pytest.fixture(scope="module", autouse=True)
 def server():
-    server = ZMQServer()
+    hardware = get_default_echo_hardware(qubit_count=qubit_count)
+    hardware = add_direction_couplings_to_hardware(
+        hardware, qpu_coupligns
+    )
+    # server = ZMQServer()
+    server = ZMQServer(hardware=hardware)
     server_thread = threading.Thread(target=server.run, daemon=True)
     server_thread.start()
 
@@ -23,15 +35,7 @@ measure q->c;
 """
 
 
-def test_zmq_flow():
-    client = ZMQClient()
 
-    config = CompilerConfig()
-    config.results_format.binary_count()
-    config.repeats = 100
-
-    response = client.execute_task(program, config)
-    assert response["results"]["c"]["00"] == 100
 
 
 def test_zmq_exception():
@@ -80,3 +84,44 @@ def test_two_zmq_clients():
     thread00.join()
     thread01.join()
     thread10.join()
+
+def test_program():
+    client = ZMQClient()
+
+    config = CompilerConfig()
+    config.results_format.binary_count()
+    config.repeats = 100
+
+    response = client.execute_task(program, config)
+    assert response["results"]["c"]["00"] == 100
+
+def test_program_backwards_compatible():
+    client = ZMQClient()
+
+    config = CompilerConfig()
+    config.results_format.binary_count()
+    config.repeats = 100
+
+    response = client._send((program, config.to_json()))
+    print(response)
+    assert response["results"]["c"]["00"] == 100
+
+def test_api_version():
+    client = ZMQClient()
+    api_version = client.api_version()
+    assert api_version["qat_rpc_version"] == version("qat_rpc")
+
+def test_couplings():
+    client = ZMQClient()
+    couplings = client.qpu_couplings()
+    assert couplings["couplings"] == qpu_coupligns
+
+def test_qubit_info():
+    client = ZMQClient()
+    qubit_info = client.qubit_info()
+    assert qubit_info["Exception"] is not None
+
+def test_qpu_info():
+    client = ZMQClient()
+    qpu_info = client.qpu_info()
+    assert qpu_info["qpu_info"] is not None
