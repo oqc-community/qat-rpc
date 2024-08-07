@@ -7,6 +7,8 @@ from qat_rpc.utils.metrics import (
     BinaryMutableOutcome,
     IncrementMutableOutcome,
     MetricExporter,
+    ReceiverBackend,
+    ReceiverAdapter,
 )
 
 
@@ -29,23 +31,9 @@ def mock_backend():
     return BackendAdapter(Mock(Backend))
 
 
-class IncrementBackend(abc.ABC):
-    @abc.abstractmethod
-    def report(self, outcome: IncrementMutableOutcome): ...
-
-
-class IncrementBackendAdapter(Backend):
-    def __init__(self, decorated):
-        super(IncrementBackendAdapter, self).__init__()
-        self.decorated = decorated
-
-    def report(self, outcome: IncrementMutableOutcome):
-        self.decorated.report(outcome)
-
-
 @pytest.fixture
 def mock_increment_backend():
-    return IncrementBackendAdapter(Mock(IncrementBackend))
+    return ReceiverAdapter(Mock(ReceiverBackend))
 
 
 def test_metric_exporter_aborts_if_given_type():
@@ -97,20 +85,20 @@ def test_metric_exporter_context_manager_with_sticky_false(mock_backend):
 
 
 def test_increment_metric_exporter_single_increment(mock_increment_backend):
-    with MetricExporter(backend=mock_increment_backend).report() as metric:
+    with MetricExporter(backend=mock_increment_backend).failed_messages() as metric:
         metric.increment()
-    expected_increment_outcome = mock_increment_backend.decorated.report.call_args[0][0]
+    expected_increment_outcome = mock_increment_backend.decorated.failed_messages.call_args[0][0]
     assert float(expected_increment_outcome) == 1.0
-    mock_increment_backend.decorated.report.assert_called_once_with(
+    mock_increment_backend.decorated.failed_messages.assert_called_once_with(
         expected_increment_outcome
     )
 
 
 def test_increment_metric_exporter_multiple_increment(mock_increment_backend):
-    with MetricExporter(backend=mock_increment_backend).report() as metric:
+    with MetricExporter(backend=mock_increment_backend).failed_messages() as metric:
         for _ in range(5):
             metric.increment()
-    assert float(mock_increment_backend.decorated.report.call_args[0][0]) == 5.0
+    assert float(mock_increment_backend.decorated.failed_messages.call_args[0][0]) == 5.0
 
 
 def test_implicit_conversion_of_proxy_object():
