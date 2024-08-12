@@ -7,8 +7,8 @@ from qat_rpc.utils.metrics import (
     BinaryMutableOutcome,
     IncrementMutableOutcome,
     MetricExporter,
-    ReceiverBackend,
     ReceiverAdapter,
+    ReceiverBackend,
 )
 
 
@@ -87,7 +87,9 @@ def test_metric_exporter_context_manager_with_sticky_false(mock_backend):
 def test_increment_metric_exporter_single_increment(mock_increment_backend):
     with MetricExporter(backend=mock_increment_backend).failed_messages() as metric:
         metric.increment()
-    expected_increment_outcome = mock_increment_backend.decorated.failed_messages.call_args[0][0]
+    expected_increment_outcome = mock_increment_backend.decorated.failed_messages.call_args[
+        0
+    ][0]
     assert float(expected_increment_outcome) == 1.0
     mock_increment_backend.decorated.failed_messages.assert_called_once_with(
         expected_increment_outcome
