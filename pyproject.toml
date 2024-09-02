@@ -10,8 +10,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8.1,<3.11"
-qat-compiler = "^1.1.0"
+python = ">=3.10,<3.13"
+qat-compiler = "2.0.3"
 pyzmq = "^25.1.0"
 
 [tool.poetry.group.dev.dependencies]
