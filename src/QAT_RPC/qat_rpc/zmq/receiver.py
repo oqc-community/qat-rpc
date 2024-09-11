@@ -24,8 +24,7 @@ class GracefulKill:
     def _sigterm(self, *args):
         self.receiver.stop()
 
-
-if __name__ == "__main__":
+def main():
     hw = None
     metric_exporter = MetricExporter(backend=PrometheusReceiver(PROMETHEUS_PORT))
     if (calibration_file := os.getenv("TOSHIKO_CAL")) is not None:
@@ -43,3 +42,6 @@ if __name__ == "__main__":
 
     log.info(f"Starting receiver with {type(receiver._hardware)} hardware.")
     receiver.run()
+
+if __name__ == "__main__":
+    main()
