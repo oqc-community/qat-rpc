@@ -22,6 +22,8 @@ autoflake = "^2.2.0"
 isort = "^5.13.2"
 black = "24.2.0"
 pre-commit = "^3.2.0"
+pip-audit = "^2.4.5"
+pip-licenses = "^5.0.0"
 
 [tool.poetry.group.licenses]
 optional = true
@@ -45,6 +47,13 @@ known_first_party = ["qat_rpc"]
 [tool.black]
 line-length = 92
 target-version = ["py38", "py39", "py310"]
+
+[tool.pip-licenses]
+ignore-packages = [
+  "docutils",
+  "psycopg2"
+]
+fail-on = "GNU General Public License (GPL);GNU Library or Lesser General Public License (LGPL)"
 
 [tool.poetry.scripts]
 format-code = "poetry_scripts:format_code"
