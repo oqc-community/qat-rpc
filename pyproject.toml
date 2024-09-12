@@ -25,12 +25,6 @@ pre-commit = "^3.2.0"
 pip-audit = "^2.4.5"
 pip-licenses = "^5.0.0"
 
-[tool.poetry.group.licenses]
-optional = true
-
-[tool.poetry.group.licenses.dependencies]
-pip-licenses = "^3.5.3"
-
 [tool.autoflake]
 remove-all-unused-imports = true
 ignore-init-module-imports = true
