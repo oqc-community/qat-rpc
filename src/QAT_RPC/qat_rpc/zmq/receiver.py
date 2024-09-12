@@ -24,6 +24,7 @@ class GracefulKill:
     def _sigterm(self, *args):
         self.receiver.stop()
 
+
 def main():
     hw = None
     metric_exporter = MetricExporter(backend=PrometheusReceiver(PROMETHEUS_PORT))
@@ -42,6 +43,7 @@ def main():
 
     log.info(f"Starting receiver with {type(receiver._hardware)} hardware.")
     receiver.run()
+
 
 if __name__ == "__main__":
     main()
