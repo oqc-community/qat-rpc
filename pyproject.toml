@@ -12,7 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 qat-compiler = "^2.0.0"
-pyzmq = "^25.1.0"
+pyzmq = "^26.1.0"
 prometheus-client="^0.20.0"
 
 [tool.poetry.group.dev.dependencies]
