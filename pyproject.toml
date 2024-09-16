@@ -20,7 +20,7 @@ coverage = "^6.3.2"
 pytest-cov = "~=2.10.1"
 autoflake = "^2.2.0"
 isort = "^5.13.2"
-black = "24.2.0"
+black = "24.3.0"
 pre-commit = "^3.2.0"
 pip-audit = "^2.4.5"
 pip-licenses = "^5.0.0"
@@ -45,7 +45,8 @@ target-version = ["py310", "py311", "py312"]
 [tool.pip-licenses]
 ignore-packages = [
   "docutils",
-  "psycopg2"
+  "psycopg2",
+  "qat-rpc"
 ]
 fail-on = "GNU General Public License (GPL);GNU Library or Lesser General Public License (LGPL)"
 
