@@ -15,44 +15,61 @@ run-name: Build from ${{ github.ref }}
 jobs:
   formatting-tests:
     name: Consistency and formatting
-    runs-on: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python: ["3.10", "3.11", "3.12"]
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.x
         uses: actions/setup-python@v5
+        id: setup-python
         with:
-          python-version: "3.9"
+          python-version: ${{ matrix.python }}
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
       - name: Formatting tests
         run: |
-          poetry install --with dev
+          poetry install --sync --with dev
           poetry run black --check .
           poetry run isort --check .
           poetry run autoflake --check .
-
+          poetry run pip-audit --desc
+          poetry run pip-licenses
 
   unit-tests:
     name: Unit Tests
-    runs-on: [ubuntu-latest]
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python: ["3.10", "3.11", "3.12"]
+    defaults:
+      run:
+        shell: bash
+        
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.x
+        id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: ${{ matrix.python }}
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
       - name: Unit tests
         run: |
-          poetry install
+          poetry install --sync
           poetry run pytest -v src/tests/
 
