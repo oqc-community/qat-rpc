@@ -1,4 +1,4 @@
-name: Publish to OQC Private PyPI
+name: Release and publish to PyPI
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  # @see https://stackoverflow.com/a/72959712/8179249
   check-current-branch:
+    name: Check tagged branch
     runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.check_step.outputs.branch }}
@@ -19,10 +19,6 @@ jobs:
           fetch-depth: 0
       - name: Get current branch
         id: check_step
-        # 1. Get the list of branches ref where this tag exists
-        # 2. Remove 'origin/' from that result
-        # 3. Put that string in output
-        # => We can now use function 'contains(list, item)''
         run: |
           raw=$(git branch -r --contains ${{ github.ref }})
           branch="$(echo ${raw//origin\//} | tr -d '\n')"
@@ -33,8 +29,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: check-current-branch
-    # only run if tag is present on branch 'main'
-    if: contains(${{ needs.check.outputs.branch }}, 'main')`
+    if: contains(${{ needs.check-current-branch.outputs.branch }}, 'main')`
     steps:
     - uses: actions/checkout@v4
     - name: Install Poetry
@@ -43,6 +38,11 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
+    - name: Check poetry version matches tag
+      run: | 
+        POETRY_VERSION=$(poetry version -s)
+        TAG=$(echo $GITHUB_REF | cut -d / -f 3)
+        [ $POETRY_VERSION = $TAG ]
     - name: Poetry install
       run: poetry install --sync
     - name: Poetry build
@@ -52,40 +52,17 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-
-  publish-to-oqc-pypi:
-    name: Publish to PyPI
-    needs:
-    - build
-    runs-on: ubuntu-latest
-    env:
-      name: oqcpypi
-      url: ${{ format('{0}qat-rpc', secrets.OQC_PYPI_URL) }}  # Replace <package-name> with your PyPI project name
-    permissions:
-      id-token: write
-    steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v3
-      with:
-        name: python-package-distributions
-        path: dist/
-    - name: Publish distribution 📦 to OQC PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: ${{ secrets.OQC_PYPI_URL }}
-        user: ${{ secrets.OQC_PYPI_USER }}
-        password: ${{ secrets.OQC_PYPI_PASSWORD }}
-
+  
   github-release:
     name: >-
       Sign the Python distribution
       and upload them to GitHub Release
     needs:
-    - publish-to-oqc-pypi
+    - build
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write  # IMPORTANT: mandatory for sigstore
+      contents: write
+      id-token: write
     steps:
     - name: Download all the dists
       uses: actions/download-artifact@v3
@@ -109,10 +86,50 @@ jobs:
     - name: Upload artifact signatures to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      # Upload to GitHub Release using the `gh` CLI.
-      # `dist/` contains the built packages, and the
-      # sigstore-produced signatures and certificates.
       run: >-
         gh release upload
         '${{ github.ref_name }}' dist/**
         --repo '${{ github.repository }}'
+
+  
+  publish-to-testpypi:
+    name: Publish to TestPyPI
+    needs:
+    - build
+    - github-release
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/qat-rpc
+    permissions:
+      id-token: write
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    needs:
+    - build
+    - publish-to-testpypi
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/qat-rpc
+    permissions:
+      id-token: write
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
