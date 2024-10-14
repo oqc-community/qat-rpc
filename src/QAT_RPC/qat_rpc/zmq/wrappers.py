@@ -4,8 +4,8 @@ from time import time
 from typing import Optional, Union
 
 import zmq
+from compiler_config.config import CompilerConfig
 from qat.purr.backends.echo import get_default_echo_hardware
-from qat.purr.compiler.config import CompilerConfig
 from qat.purr.compiler.hardware_models import QuantumHardwareModel
 from qat.purr.compiler.runtime import get_runtime
 from qat.purr.integrations.features import OpenPulseFeatures

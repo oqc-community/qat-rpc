@@ -2,11 +2,11 @@ import threading
 from importlib.metadata import version
 
 import pytest
+from compiler_config.config import CompilerConfig
 from qat.purr.backends.echo import (
     add_direction_couplings_to_hardware,
     get_default_echo_hardware,
 )
-from qat.purr.compiler.config import CompilerConfig
 
 from qat_rpc.utils.constants import PROMETHEUS_PORT
 from qat_rpc.utils.metrics import MetricExporter, PrometheusReceiver
