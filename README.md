@@ -12,7 +12,7 @@ The QAT-RPC package has not yet been released to PyPI.
 ### Building from Source
 
 We use [poetry](https://python-poetry.org/) for dependency management and run on
-[Python 3.8+](https://www.python.org/downloads/).
+[Python 3.10+](https://www.python.org/downloads/).
 Once both of these are installed run this in the root folder to install all the dependencies that you need: `poetry install`
 
 > If you are contributing to the project we recommend that you also run
