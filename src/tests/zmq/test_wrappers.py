@@ -13,14 +13,13 @@ from qat_rpc.utils.metrics import MetricExporter, PrometheusReceiver
 from qat_rpc.zmq.wrappers import ZMQClient, ZMQServer
 
 qubit_count = 8
-qpu_couplings = [(i, j) for i in range(qubit_count) for j in range(qubit_count)]
+qpu_couplings = [(i, j) for i in range(qubit_count) for j in range(qubit_count) if i != j]
 
 
 @pytest.fixture(scope="module", autouse=True)
 def server():
     hardware = get_default_echo_hardware(qubit_count=qubit_count)
     hardware = add_direction_couplings_to_hardware(hardware, qpu_couplings)
-    # server = ZMQServer()
     server = ZMQServer(
         hardware=hardware,
         metric_exporter=MetricExporter(backend=PrometheusReceiver(PROMETHEUS_PORT)),
