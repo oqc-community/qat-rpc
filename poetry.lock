@@ -3175,13 +3175,13 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "qat-compiler"
-version = "2.2.0"
+version = "2.3.0"
 description = "A low-level quantum compiler and runtime which facilitates executing quantum IRs."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "qat_compiler-2.2.0-py3-none-any.whl", hash = "sha256:9314e2b618f8b98ac2e7ecede7b37c88e76ac91cf69256f4271dc92aba56e4ba"},
-    {file = "qat_compiler-2.2.0.tar.gz", hash = "sha256:40bb65b5f5e75c7dd5c9a4eaaf08b426124eec581e79a9bc73d26f5a45679be0"},
+    {file = "qat_compiler-2.3.0-py3-none-any.whl", hash = "sha256:b019a836381300bfddca4cdef56ddd2ed81fca20817a22f6e539f75ca72cc027"},
+    {file = "qat_compiler-2.3.0.tar.gz", hash = "sha256:15882d0de03454e3c74aabf3c73cc5c11df50b63d8ff0e8d6ec82319b3acfa02"},
 ]
 
 [package.dependencies]
@@ -4617,4 +4617,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "5e8a34bac94167968351724f4b9ff22955e0e894270683bc5530e944de943760"
+content-hash = "089974be9803fe58fa9a2171b44c35ebf1ce66fbdb11070e04be22480b6bf7ab"
