@@ -41,7 +41,9 @@ jobs:
       - name: Check poetry version matches tag
         run: |
           POETRY_VERSION=$(poetry version -s)
+          echo $POETRY_VERSION
           TAG=$(echo $GITHUB_REF | cut -d / -f 3)
+          echo $TAG
           [ $POETRY_VERSION = $TAG ]
       - name: Poetry install
         run: poetry install --sync
