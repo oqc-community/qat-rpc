@@ -5,4 +5,4 @@ STARTING = "starting"
 RUNNING = "running"
 STOPPED = "stopped"
 
-PROMETHEUS_PORT = 9150
+PROMETHEUS_PORT = 9250
