@@ -23,13 +23,18 @@ class Messages(Enum):
 
 
 class ZMQBase:
-    def __init__(self, socket_type: zmq.SocketType):
+    def __init__(
+        self,
+        socket_type: zmq.SocketType,
+        ip_address: str = "127.0.0.1",
+        port: str = "5556"
+    ):
         self._context = zmq.Context()
         self._socket = self._context.socket(socket_type)
         self._timeout = 30.0
         self._protocol = "tcp"
-        self._ip_address = "127.0.0.1"
-        self._port = "5556"
+        self._ip_address = ip_address
+        self._port = port
 
     @property
     def address(self):
@@ -155,8 +160,12 @@ class ZMQServer(ZMQBase):
 
 
 class ZMQClient(ZMQBase):
-    def __init__(self):
-        super().__init__(zmq.REQ)
+    def __init__(
+        self,
+        ip_address: str = "127.0.0.1",
+        port: str = "5556"
+    ):
+        super().__init__(zmq.REQ, ip_address, port)
         self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self.address)
 
