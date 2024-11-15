@@ -158,7 +158,7 @@ class ZMQServer(ZMQBase):
 
 
 class ZMQClient(ZMQBase):
-    def __init__(self, client_ip: Optional[str] = None, client_port: Optional[str] = None):
+    def __init__(self, client_ip: Optional[str] = "127.0.0.1", client_port: Optional[str] = "5556"):
         super().__init__(socket_type=zmq.REQ, ip_address=client_ip, port=client_port)
         self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self.address)
