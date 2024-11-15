@@ -84,10 +84,7 @@ class NullReceiverBackend(ReceiverBackend):
 
 
 class PrometheusReceiver(ReceiverBackend):
-    def __init__(
-            self,
-            port: int = PROMETHEUS_PORT
-    ):
+    def __init__(self, port: int = PROMETHEUS_PORT):
         super(PrometheusReceiver, self).__init__()
         start_http_server(port)
         log.info(f"Starting Prometheus metrics exporter on port {port}.")

@@ -24,10 +24,7 @@ class Messages(Enum):
 
 class ZMQBase:
     def __init__(
-        self,
-        socket_type: zmq.SocketType,
-        ip_address: str = "127.0.0.1",
-        port: str = "5556"
+        self, socket_type: zmq.SocketType, ip_address: str = "127.0.0.1", port: str = "5556"
     ):
         self._context = zmq.Context()
         self._socket = self._context.socket(socket_type)
@@ -77,7 +74,7 @@ class ZMQServer(ZMQBase):
         self,
         hardware: Optional[QuantumHardwareModel] = None,
         server_port: Optional[str] = None,
-        metric_exporter: Optional[MetricExporter] = None
+        metric_exporter: Optional[MetricExporter] = None,
     ):
         super().__init__(socket_type=zmq.REP, port=server_port)
         self._metric = metric_exporter
@@ -161,11 +158,7 @@ class ZMQServer(ZMQBase):
 
 
 class ZMQClient(ZMQBase):
-    def __init__(
-            self,
-            client_ip: Optional[str] = None,
-            client_port: Optional[str] = None
-    ):
+    def __init__(self, client_ip: Optional[str] = None, client_port: Optional[str] = None):
         super().__init__(socket_type=zmq.REQ, ip_address=client_ip, port=client_port)
         self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self.address)
