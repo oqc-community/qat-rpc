@@ -73,9 +73,10 @@ class ZMQServer(ZMQBase):
     def __init__(
         self,
         hardware: Optional[QuantumHardwareModel] = None,
+        server_port: Optional[str] = "5556",
         metric_exporter: Optional[MetricExporter] = None,
     ):
-        super().__init__(zmq.REP)
+        super().__init__(socket_type=zmq.REP, port=server_port)
         self._metric = metric_exporter
         self._socket.bind(self.address)
         self._hardware = hardware or get_default_echo_hardware(qubit_count=32)
@@ -157,8 +158,10 @@ class ZMQServer(ZMQBase):
 
 
 class ZMQClient(ZMQBase):
-    def __init__(self, ip_address: str = "127.0.0.1", port: str = "5556"):
-        super().__init__(zmq.REQ, ip_address, port)
+    def __init__(
+        self, client_ip: Optional[str] = "127.0.0.1", client_port: Optional[str] = "5556"
+    ):
+        super().__init__(socket_type=zmq.REQ, ip_address=client_ip, port=client_port)
         self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self.address)
 
