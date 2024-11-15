@@ -73,7 +73,7 @@ class ZMQServer(ZMQBase):
     def __init__(
         self,
         hardware: Optional[QuantumHardwareModel] = None,
-        server_port: Optional[str] = None,
+        server_port: Optional[str] = "5556",
         metric_exporter: Optional[MetricExporter] = None,
     ):
         super().__init__(socket_type=zmq.REP, port=server_port)
