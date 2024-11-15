@@ -84,10 +84,13 @@ class NullReceiverBackend(ReceiverBackend):
 
 
 class PrometheusReceiver(ReceiverBackend):
-    def __init__(self, port: int):
+    def __init__(
+            self,
+            port: int = PROMETHEUS_PORT
+    ):
         super(PrometheusReceiver, self).__init__()
-        start_http_server(port=PROMETHEUS_PORT)
-        log.info(f"Using Prometheus on port {port}")
+        start_http_server(port)
+        log.info(f"Starting Prometheus metrics exporter on port {port}.")
 
         self._receiver_status = Gauge(
             "receiver_status", "Measure the Receiver backend up state"
