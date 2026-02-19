@@ -25,31 +25,50 @@ packages = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-coverage = "^6.3.2"
-pytest-cov = "~=2.10.1"
-autoflake = "^2.2.0"
-isort = "^5.13.2"
-black = "24.3.0"
-pre-commit = "^3.2.0"
-pip-audit = "^2.4.5"
-pip-licenses = "^5.0.0"
+bandit = ">=1.8.0"
+coverage = ">=7.0.0"
+deptry = ">=0.23.0"
+import-linter = ">=2.0"
+pip-audit = ">=2.10.0"
+pip-licenses = ">=5.0.0"
+poethepoet = ">=0.36.0"
+pyright = { extras = ["nodejs"], version = ">=1.1.402" }
+pytest = ">=8.0.0"
+pytest-cov = ">=4.0.0"
+pytest-mock = ">=3.14.0"
+ruff = ">=0.12.0"
 
-[tool.autoflake]
-remove-all-unused-imports = true
-ignore-init-module-imports = true
-ignore-pass-after-docstring = true
-in-place = true
-recursive = true
+# Pinned minimum versions to avoid known vulnerabilities in dev dependencies
+filelock = ">=3.20.3"
+pip = ">=26.0"
+virtualenv = ">=20.36.1"
 
-[tool.isort]
-py_version = 39
-profile = "black"
-line_length = 92
+[tool.ruff]
+line-length = 92
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "N", "TRY", "FAST"]
+ignore = ["TRY003"] # Requires refactor of exception handling which is out of scope for now
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pyright]
+exclude = ["**/.venv", "**/__pycache__", "**/tests"]
+ignore = ["src/qat_rpc/metrics.py"]  # TODO: Fix type errors as part of metrics refactor
+pythonPlatform = "Linux"
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+
+[tool.deptry]
+extend_exclude = ["src/tests"]
 known_first_party = ["qat_rpc"]
 
-[tool.black]
-line-length = 92
-target-version = ["py310", "py311", "py312"]
+[tool.deptry.per_rule_ignores]
+DEP002 = ["certifi", "cryptography", "idna", "jinja2", "pillow", "setuptools", "urllib3"]
+DEP003 = ["compiler_config"]
 
 [tool.pip-licenses]
 ignore-packages = [
