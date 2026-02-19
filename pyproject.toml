@@ -1,6 +1,6 @@
 [project]
 name = "qat-rpc"
-version = "0.6.0"
+version = "1.0.0"
 description = "RPC tooling for OQC QAT."
 authors = [
     { name = "Kajsa Eriksson Rosenqvist", email = "keriksson.rosenqvist@oqc.tech" },
@@ -10,14 +10,24 @@ readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.10,<3.13"
 dependencies = [
-    "pydantic>=2.9.0,<3.0.0",
+    "pydantic>=2.0",
     "prometheus-client>=0.20.0",
     "pyzmq>=26.1.0",
     "qat-compiler>=3.0.0,<4.0.0",
+
+    # Pinned minimum versions to avoid known vulnerabilities
+    "certifi>=2024.7.4",
+    "cryptography>=46.0.5",
+    "idna>=3.7",
+    "jinja2>=3.1.5",
+    "pillow>=12.1.1",
+    "setuptools>=75.6.0",
+    "urllib3>=2.2.2",
 ]
 
 [project.scripts]
-qat_comexe = "qat_rpc.zmq.qat_commands:qat_run"
+qat_comexe = "qat_rpc.zmq.client_cli:qat_run"
+qat_server = "qat_rpc.zmq.server:main"
 
 [tool.poetry]
 packages = [
@@ -42,6 +52,84 @@ ruff = ">=0.12.0"
 filelock = ">=3.20.3"
 pip = ">=26.0"
 virtualenv = ">=20.36.1"
+
+[tool.poe.tasks.fix]
+help = "Fix code to adhere with project standards"
+shell = "ruff format && ruff check --fix"
+
+[tool.poe.tasks.lint]
+cmd = "ruff check"
+help = "Lint all files against project standards"
+
+[tool.poe.tasks.format]
+cmd = "ruff format --check"
+help = "Check code formatting against project standards"
+
+[tool.poe.tasks.types]
+cmd = "pyright ."
+help = "Type checking"
+
+[tool.poe.tasks.test]
+cmd = "pytest"
+help = "Run tests"
+
+[tool.poe.tasks.vuln]
+help = "Static analysis for vulnerabilities"
+sequence = ["bandit", "pipaudit"]
+
+[tool.poe.tasks.bandit]
+cmd = "bandit -c pyproject.toml -r src/"
+help = "Search for common security issues in Python code"
+
+[tool.poe.tasks.pipaudit]
+cmd = "pip-audit --desc"
+help = "Scan Python environment for packages with known vulnerabilities"
+
+[tool.poe.tasks.licenses]
+cmd = "pip-licenses"
+help = "Validate compliance with software license list of Python packages installed"
+
+[tool.poe.tasks.deptry]
+cmd = "deptry ."
+help = "Check for module import problems"
+
+[tool.poe.tasks.importlinter]
+cmd = "lint-imports"
+help = "Ensure import contracts are enforced"
+
+[tool.poe.tasks.deps]
+help = "Enforce sensible management of dependencies"
+sequence = ["deptry", "importlinter"]
+
+[tool.poe.tasks.checks]
+help = "Runs all checks prior to PR and CI pipeline run"
+sequence = ["format", "lint", "types", "deps", "licenses", "vuln", "test"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+addopts = [
+    "-v",
+    "--cov=qat_rpc",
+    "--cov-report=term-missing",
+    "--cov-report=xml:coverage.xml",
+    "--cov-report=html:htmlcov",
+    "--cov-fail-under=75",
+]
+
+[tool.coverage.run]
+source = ["qat_rpc"]
+omit = [ # These 3 files are just shims to protect backwards compatibility
+    "src/qat_rpc/zmq/wrappers.py",
+    "src/qat_rpc/zmq/receiver.py",
+    "src/qat_rpc/zmq/qat_commands.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "\\.\\.\\.",
+]
 
 [tool.ruff]
 line-length = 92
@@ -77,6 +165,36 @@ ignore-packages = [
   "qat-rpc"
 ]
 fail-on = "GNU General Public License (GPL);GNU Library or Lesser General Public License (LGPL)"
+
+[tool.importlinter]
+root_packages = ["qat_rpc"]
+
+[[tool.importlinter.contracts]]
+name = "Models must not import from other internal modules"
+type = "forbidden"
+source_modules = ["qat_rpc.models"]
+forbidden_modules = ["qat_rpc.handler", "qat_rpc.zmq", "qat_rpc.metrics"]
+
+[[tool.importlinter.contracts]]
+name = "Metrics must not import from other internal modules"
+type = "forbidden"
+source_modules = ["qat_rpc.metrics"]
+forbidden_modules = ["qat_rpc.handler", "qat_rpc.zmq", "qat_rpc.models"]
+
+[[tool.importlinter.contracts]]
+name = "Handler must not import from zmq transport layer"
+type = "forbidden"
+source_modules = ["qat_rpc.handler"]
+forbidden_modules = ["qat_rpc.zmq"]
+
+[[tool.importlinter.contracts]]
+name = "Layered architecture"
+type = "layers"
+layers = [
+    "qat_rpc.zmq",
+    "qat_rpc.handler",
+    "qat_rpc.models | qat_rpc.metrics",
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
