@@ -110,9 +110,7 @@ class PrometheusReceiver(ReceiverBackend):
             "receiver_status", "Measure the Receiver backend up state"
         )
         self._failed_messages = Counter("failed_messages", "messages failure counter")
-        self._executed_messages = Counter(
-            "executed_messages", "messages executed counter"
-        )
+        self._executed_messages = Counter("executed_messages", "messages executed counter")
         self._hardware_connected_status = Gauge(
             "hardware_connected_status",
             "Indicate connected status of live hardware",

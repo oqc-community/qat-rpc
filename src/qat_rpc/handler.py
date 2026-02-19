@@ -103,9 +103,7 @@ class QATServiceHandler:
         """Compile and execute a program. Pipelines default if not specified."""
         compile_result = self.compile(program, config, compile_pipeline)
         execute_result = self.execute(compile_result.package, config, execute_pipeline)
-        metrics = compile_result.compilation_metrics.merge(
-            execute_result.execution_metrics
-        )
+        metrics = compile_result.compilation_metrics.merge(execute_result.execution_metrics)
         return Results(
             results=execute_result.results,
             execution_metrics=metrics,
@@ -155,9 +153,7 @@ class QATServiceHandler:
                 compile_pipeline=compile_pipeline,
                 execute_pipeline=execute_pipeline,
             ):
-                return self.run_program(
-                    program, config, compile_pipeline, execute_pipeline
-                )
+                return self.run_program(program, config, compile_pipeline, execute_pipeline)
 
             case CompileMessage(program=program, config=config, pipeline=pipeline):
                 return self.compile(program, config, pipeline)
