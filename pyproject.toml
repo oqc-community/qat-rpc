@@ -1,19 +1,27 @@
-[tool.poetry]
+[project]
 name = "qat-rpc"
 version = "0.6.0"
 description = "RPC tooling for OQC QAT."
-authors = ["Kajsa Eriksson Rosenqvist <keriksson.rosenqvist@oxfordquantumcircuits.com>"]
+authors = [
+    { name = "Kajsa Eriksson Rosenqvist", email = "keriksson.rosenqvist@oqc.tech" },
+    { name = "Kyle Hutchings", email = "khutchings@oqc.tech" },
+]
 readme = "README.md"
 license = "BSD-3-Clause"
-packages = [
-    { include = "qat_rpc", from = "src/QAT_RPC/" }
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "prometheus-client>=0.20.0",
+    "pyzmq>=26.1.0",
+    "qat-compiler>=2.3.0",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-pyzmq = "^26.1.0"
-prometheus-client="^0.20.0"
-qat-compiler = "^2.3.0"
+[project.scripts]
+qat_comexe = "qat_rpc.zmq.qat_commands:qat_run"
+
+[tool.poetry]
+packages = [
+    { include = "qat_rpc", from = "src/" }
+]
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^6.3.2"
@@ -50,10 +58,6 @@ ignore-packages = [
 ]
 fail-on = "GNU General Public License (GPL);GNU Library or Lesser General Public License (LGPL)"
 
-[tool.poetry.scripts]
-format-code = "poetry_scripts:format_code"
-qat_comexe="qat_rpc.zmq.qat_commands:qat_run"
-
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
