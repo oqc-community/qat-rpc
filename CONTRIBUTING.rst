@@ -26,8 +26,13 @@ All contributions to QAT-RPC are governed by our
 -------------------------
 Installation
 -------------------------
-To get started, see the Building from Source section of the
-`README <https://github.com/oqc-community/qat-rpc/blob/main/README.md>`_.
+To get started, install the project dependencies using Poetry:
+
+.. code-block:: bash
+
+   poetry install
+
+See the `README <https://github.com/oqc-community/qat-rpc/blob/main/README.md>`_ for more details.
 
 |
 
@@ -104,8 +109,7 @@ This is to save disappointment as some features we will refuse because purely it
 
 Once a new feature has approval of the team as a whole you can start work on it and we'll support you where possible. If you do not want to work on it personally it'll go on the backlog and we'll get to it when possible.
 
-For ideas about where the project is heading, checkout the `issues <https://github.com/oqc-community/qat-rpc/issues>`_ list
-or the Roadmap in the `README <https://github.com/oqc-community/qat-rpc/blob/main/README.md>`_.
+For ideas about where the project is heading, checkout the `issues <https://github.com/oqc-community/qat-rpc/issues>`_ list.
 
 |
 
@@ -115,8 +119,23 @@ Additional Information
 
 Unit Tests
 ~~~~~~~~~~~~~~~~~~~~~~
-QAT-RPC has an existing test suite, which can be found in the tests directory of the code base.
+QAT-RPC has an existing test suite, which can be found in the ``tests`` directory of the code base.
 It is our policy that these tests should pass at all times, unless a test is skipped in which case justification should
 be provided.
 New features should be accompanied by a comprehensive test suite which makes sure that the feature is behaving as
 intended, and that future merges do not unintentionally break this functionality.
+
+Run tests using:
+
+.. code-block:: bash
+
+   poetry run poe test
+
+Or run all checks (formatting, linting, type checking, dependency checks, security scans, and tests):
+
+.. code-block:: bash
+
+   poetry run poe checks
+
+See the Development section of the `README <https://github.com/oqc-community/qat-rpc/blob/main/README.md>`_ for
+more details on available tasks.
