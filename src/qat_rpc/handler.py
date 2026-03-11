@@ -16,8 +16,10 @@ from qat_rpc.metrics import MetricExporter
 from qat_rpc.models import (
     CompiledProgram,
     CompileMessage,
+    CompilePipelinesMessage,
     CouplingsMessage,
     ExecuteMessage,
+    ExecutePipelinesMessage,
     Message,
     ProgramMessage,
     QpuInfoMessage,
@@ -129,6 +131,20 @@ class QATServiceHandler:
             "Individual qubit information not implemented, pending hardware model changes."
         )
 
+    def compile_pipelines(self) -> dict[str, Any]:
+        """Return available compile pipelines and the current default."""
+        return {
+            "compile_pipelines": self._qat.pipelines.list_compile_pipelines,
+            "default": self._get_default_compile_pipeline_name(),
+        }
+
+    def execute_pipelines(self) -> dict[str, Any]:
+        """Return available execute pipelines and the current default."""
+        return {
+            "execute_pipelines": self._qat.pipelines.list_execute_pipelines,
+            "default": self._get_default_execute_pipeline_name(),
+        }
+
     def qpu_info(self, pipeline: str | None = None) -> dict[str, Any]:
         """Return aggregate QPU hardware information via OpenPulse."""
         hardware = self._get_hardware(pipeline)
@@ -172,6 +188,12 @@ class QATServiceHandler:
 
             case QpuInfoMessage(pipeline=pipeline):
                 return self.qpu_info(pipeline)
+
+            case CompilePipelinesMessage():
+                return self.compile_pipelines()
+
+            case ExecutePipelinesMessage():
+                return self.execute_pipelines()
 
             case _:
                 raise ValueError(f"Unrecognized message: {message}")

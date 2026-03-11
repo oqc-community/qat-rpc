@@ -106,3 +106,17 @@ class TestMetadataQueries:
         """qubit_info is not implemented — server returns an Exception dict."""
         result = _client.qubit_info()
         assert "Exception" in result
+
+    def test_compile_pipelines(self, _client):
+        result = _client.compile_pipelines()
+        assert "compile_pipelines" in result
+        assert isinstance(result["compile_pipelines"], list)
+        assert "default" in result
+        assert isinstance(result["default"], str)
+
+    def test_execute_pipelines(self, _client):
+        result = _client.execute_pipelines()
+        assert "execute_pipelines" in result
+        assert isinstance(result["execute_pipelines"], list)
+        assert "default" in result
+        assert isinstance(result["default"], str)

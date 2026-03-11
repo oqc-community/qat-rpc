@@ -9,8 +9,10 @@ from qat.purr.compiler.builders import InstructionBuilder
 
 from qat_rpc.models import (
     CompileMessage,
+    CompilePipelinesMessage,
     CouplingsMessage,
     ExecuteMessage,
+    ExecutePipelinesMessage,
     Message,
     ProgramMessage,
     QpuInfoMessage,
@@ -116,3 +118,11 @@ class ZMQClient(ZMQBase):
     def qpu_info(self, pipeline: str | None = None) -> dict[str, Any]:
         """Request QPU hardware information."""
         return self._send_and_receive(QpuInfoMessage(pipeline=pipeline))
+
+    def compile_pipelines(self) -> dict[str, Any]:
+        """Request the list of available compile pipelines."""
+        return self._send_and_receive(CompilePipelinesMessage())
+
+    def execute_pipelines(self) -> dict[str, Any]:
+        """Request the list of available execute pipelines."""
+        return self._send_and_receive(ExecutePipelinesMessage())

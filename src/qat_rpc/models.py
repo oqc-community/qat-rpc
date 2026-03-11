@@ -73,6 +73,14 @@ class QpuInfoMessage(_FrozenMessage):
     pipeline: str | None = None
 
 
+class CompilePipelinesMessage(_FrozenMessage):
+    """Request the list of available compile pipelines."""
+
+
+class ExecutePipelinesMessage(_FrozenMessage):
+    """Request the list of available execute pipelines."""
+
+
 Message = (
     ProgramMessage
     | CompileMessage
@@ -81,6 +89,8 @@ Message = (
     | CouplingsMessage
     | QubitInfoMessage
     | QpuInfoMessage
+    | CompilePipelinesMessage
+    | ExecutePipelinesMessage
 )
 
 

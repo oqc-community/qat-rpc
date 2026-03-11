@@ -5,8 +5,10 @@ from pydantic import ValidationError
 
 from qat_rpc.models import (
     CompileMessage,
+    CompilePipelinesMessage,
     CouplingsMessage,
     ExecuteMessage,
+    ExecutePipelinesMessage,
     ProgramMessage,
     QpuInfoMessage,
     QubitInfoMessage,
@@ -91,3 +93,12 @@ class TestHardwareInfoMessages:
     def test_construction_with_pipeline(self, message):
         msg = message(pipeline="pipeline")
         assert msg.pipeline == "pipeline"
+
+
+class TestPipelineQueryMessages:
+    @pytest.mark.parametrize(
+        "message_cls", [CompilePipelinesMessage, ExecutePipelinesMessage]
+    )
+    def test_construction(self, message_cls):
+        msg = message_cls()
+        assert msg is not None
