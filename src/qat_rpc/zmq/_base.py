@@ -20,10 +20,11 @@ class ZMQBase:
         socket_type: int,
         ip_address: str = "127.0.0.1",
         port: int = 5556,
+        timeout: float = 30.0,
     ):
         self._context = zmq.Context()
         self._socket = self._context.socket(socket_type)
-        self._timeout = 30.0
+        self._timeout = timeout
         self._protocol = "tcp"
         self._ip_address = ip_address
         self._port = port

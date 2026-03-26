@@ -34,8 +34,11 @@ class ZMQClient(ZMQBase):
         self,
         client_ip: str = "127.0.0.1",
         client_port: int = 5556,
+        timeout: float = 30.0,
     ):
-        super().__init__(socket_type=zmq.REQ, ip_address=client_ip, port=client_port)
+        super().__init__(
+            socket_type=zmq.REQ, ip_address=client_ip, port=client_port, timeout=timeout
+        )
         self._socket.connect(self.address)
 
     def _await_results(self) -> dict[str, Any]:

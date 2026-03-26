@@ -48,8 +48,9 @@ class ZMQServer(ZMQBase):
         metric_exporter: MetricExporter,
         server_port: int = RECEIVER_PORT,
         qat_config_path: Path | None = None,
+        timeout: float = 30.0,
     ):
-        super().__init__(socket_type=zmq.REP, port=server_port)
+        super().__init__(socket_type=zmq.REP, port=server_port, timeout=timeout)
         self._socket.bind(self.address)
         self._handler = QATServiceHandler(metric_exporter, qat_config_path)
         self._running = False
