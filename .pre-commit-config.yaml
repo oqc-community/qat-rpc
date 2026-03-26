@@ -8,9 +8,9 @@ repos:
       - id: check-merge-conflict
         stages: [pre-commit, manual]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.2
+    rev: v0.15.7
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
         stages: [pre-commit, manual]
       - id: ruff-format
