@@ -31,7 +31,12 @@ parser.add_argument("--port", type=int, default=5556, help="Server port (default
 
 
 def _read_file_or_string(value: str, label: str) -> str:
-    """Return file contents if *value* is a file path, otherwise return it as-is."""
+    """Return file contents if *value* is a file path, otherwise return it as-is.
+
+    :param value: A file path or literal string (e.g. a program or config JSON).
+    :param label: Descriptive name for *value* (e.g. ``"program"`` or ``"config"``),
+        used in error messages to identify which input failed to read.
+    """
     path = Path(value)
     if path.is_file():
         try:
