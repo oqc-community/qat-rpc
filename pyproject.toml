@@ -14,15 +14,6 @@ dependencies = [
     "prometheus-client>=0.20.0",
     "pyzmq>=26.1.0",
     "qat-compiler>=3.0.0,<4.0.0",
-
-    # Pinned minimum versions to avoid known vulnerabilities
-    "certifi>=2024.7.4",
-    "cryptography>=46.0.5",
-    "idna>=3.7",
-    "jinja2>=3.1.5",
-    "pillow>=12.1.1",
-    "setuptools>=75.6.0",
-    "urllib3>=2.2.2",
 ]
 
 [project.scripts]
@@ -48,11 +39,6 @@ pytest-cov = ">=4.0.0"
 pytest-mock = ">=3.14.0"
 ruff = ">=0.12.0"
 pre-commit = ">=4.5.1"
-
-# Pinned minimum versions to avoid known vulnerabilities in dev dependencies
-filelock = ">=3.20.3"
-pip = ">=26.0"
-virtualenv = ">=20.36.1"
 
 [tool.poe.tasks.fix]
 help = "Fix code to adhere with project standards"
@@ -83,7 +69,11 @@ cmd = "bandit -c pyproject.toml -r src/"
 help = "Search for common security issues in Python code"
 
 [tool.poe.tasks.pipaudit]
-cmd = "pip-audit --desc"
+# Ignoring CVE-2026-4539 - No fix currently available
+cmd = """
+pip-audit --desc \
+  --ignore-vuln CVE-2026-4539
+"""
 help = "Scan Python environment for packages with known vulnerabilities"
 
 [tool.poe.tasks.licenses]
