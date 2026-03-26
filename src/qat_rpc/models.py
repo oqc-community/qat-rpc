@@ -7,6 +7,7 @@ the handler and transport layers.
 
 from typing import Any
 
+from compiler_config.config import CompilerConfig
 from pydantic import BaseModel, ConfigDict
 from qat.core.metrics_base import MetricsManager
 from qat.executables import Executable
@@ -20,7 +21,7 @@ class _FrozenMessage(BaseModel):
 
     Frozen so messages are hashable and cannot be mutated after creation.
     ``arbitrary_types_allowed`` permits QAT-internal types like
-    ``InstructionBuilder`` as fields.
+    ``InstructionBuilder`` and ``CompilerConfig`` as fields.
     """
 
     model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
@@ -30,7 +31,7 @@ class ProgramMessage(_FrozenMessage):
     """Compile and execute a program in a single round-trip."""
 
     program: str
-    config: str
+    config: CompilerConfig
     compile_pipeline: str | None = None
     execute_pipeline: str | None = None
 
@@ -39,7 +40,7 @@ class CompileMessage(_FrozenMessage):
     """Compile a program without executing it."""
 
     program: str
-    config: str
+    config: CompilerConfig
     pipeline: str | None = None
 
 
@@ -47,7 +48,7 @@ class ExecuteMessage(_FrozenMessage):
     """Execute a previously compiled package."""
 
     package: InstructionBuilder | Executable | str
-    config: str
+    config: CompilerConfig
     pipeline: str | None = None
 
 

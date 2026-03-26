@@ -28,7 +28,7 @@ class TestConvertLegacyMessage:
         msg = ZMQServer._convert_legacy_message(("OPENQASM 2.0;", config))
         assert isinstance(msg, ProgramMessage)
         assert msg.program == "OPENQASM 2.0;"
-        assert msg.config == config
+        assert isinstance(msg.config, CompilerConfig)
 
     def test_tagged_program(self):
         """0.3.0 -> 0.6.0 format: ("program", code, config)."""

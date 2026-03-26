@@ -50,11 +50,12 @@ class ZMQClient(ZMQBase):
         self._send(message)
         return self._await_results()
 
-    def _build_config(self, config: CompilerConfig | str | None) -> str:
-        """Normalise *config* to a JSON string, applying defaults when ``None``."""
+    @staticmethod
+    def _build_config(config: CompilerConfig | str | None) -> CompilerConfig:
+        """Normalise *config* to a ``CompilerConfig``, applying defaults when ``None``."""
         if isinstance(config, str):
-            return CompilerConfig.create_from_json(config).to_json()
-        return (config or CompilerConfig()).to_json()
+            return CompilerConfig.create_from_json(config)
+        return config or CompilerConfig()
 
     def execute_task(
         self,

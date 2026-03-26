@@ -14,6 +14,7 @@ from types import FrameType, TracebackType
 from typing import Any
 
 import zmq
+from compiler_config.config import CompilerConfig
 from qat.purr.utils.logger import get_default_logger
 
 from qat_rpc.handler import QATServiceHandler
@@ -84,7 +85,9 @@ class ZMQServer(ZMQBase):
             "qubit_info",
             "qpu_info",
         }:
-            return ProgramMessage(program=raw[0], config=raw[1])
+            return ProgramMessage(
+                program=raw[0], config=CompilerConfig.create_from_json(raw[1])
+            )
 
         if not isinstance(raw[0], str):
             raise TypeError(f"Invalid legacy message: {raw}")
@@ -95,11 +98,14 @@ class ZMQServer(ZMQBase):
         match msg_type:
             case "program":
                 if len(args) == 2:
-                    return ProgramMessage(program=args[0], config=args[1])
+                    return ProgramMessage(
+                        program=args[0],
+                        config=CompilerConfig.create_from_json(args[1]),
+                    )
                 if len(args) == 4:
                     return ProgramMessage(
                         program=args[0],
-                        config=args[1],
+                        config=CompilerConfig.create_from_json(args[1]),
                         compile_pipeline=args[2] or None,
                         execute_pipeline=args[3] or None,
                     )

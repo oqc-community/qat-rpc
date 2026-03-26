@@ -7,31 +7,27 @@ from qat_rpc.zmq.client import ZMQClient
 
 
 class TestBuildConfig:
-    def _build(self, config):
-        """Call _build_config without connecting to a server."""
-        return ZMQClient._build_config(None, config)
-
-    def _config_json(self, repeats: int) -> str:
+    @staticmethod
+    def _config(repeats: int) -> CompilerConfig:
         config = CompilerConfig()
         config.repeats = repeats
-        return config.to_json()
+        return config
 
-    def test_none_returns_default_json(self):
-        result = self._build(None)
-        expected = CompilerConfig().to_json()
-        assert result == expected
+    def test_none_returns_default(self):
+        result = ZMQClient._build_config(None)
+        assert isinstance(result, CompilerConfig)
+        assert result.to_json() == CompilerConfig().to_json()
 
     @pytest.mark.parametrize("repeats", [500, 42])
-    def test_compiler_config_roundtrip(self, repeats):
-        config = CompilerConfig()
-        config.repeats = repeats
-        result = self._build(config)
-        roundtripped = CompilerConfig.create_from_json(result)
-        assert roundtripped.repeats == repeats
+    def test_compiler_config_passthrough(self, repeats):
+        config = self._config(repeats)
+        result = ZMQClient._build_config(config)
+        assert isinstance(result, CompilerConfig)
+        assert result.repeats == repeats
 
     def test_string_normalisation(self):
-        """Passing a JSON string re-parses and re-serialises for consistency."""
-        json_str = self._config_json(repeats=123)
-        result = self._build(json_str)
-        # Round-tripped JSON should be equivalent
-        assert CompilerConfig.create_from_json(result).to_json() == result
+        """Passing a JSON string parses into a CompilerConfig."""
+        config = self._config(repeats=123)
+        result = ZMQClient._build_config(config.to_json())
+        assert isinstance(result, CompilerConfig)
+        assert result.repeats == 123

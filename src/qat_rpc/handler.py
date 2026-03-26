@@ -73,32 +73,30 @@ class QATServiceHandler:
     # --- Operations ---
 
     def compile(
-        self, program: str, config: str, pipeline: str | None = None
+        self, program: str, config: CompilerConfig, pipeline: str | None = None
     ) -> CompiledProgram:
         """Compile *program* and return the compiled package with metrics."""
-        config_obj = CompilerConfig.create_from_json(config)
         if pipeline is None:
             pipeline = self._get_default_compile_pipeline_name()
-        package, metrics = self._qat.compile(program, config_obj, pipeline)
+        package, metrics = self._qat.compile(program, config, pipeline)
         return CompiledProgram(package=package, compilation_metrics=metrics)
 
     def execute(
         self,
         package: InstructionBuilder | Executable | str,
-        config: str,
+        config: CompilerConfig,
         pipeline: str | None = None,
     ) -> Results:
         """Execute a compiled *package* and return results with metrics."""
-        config_obj = CompilerConfig.create_from_json(config)
         if pipeline is None:
             pipeline = self._get_default_execute_pipeline_name()
-        results, metrics = self._qat.execute(package, config_obj, pipeline)
+        results, metrics = self._qat.execute(package, config, pipeline)
         return Results(results=results, execution_metrics=metrics)
 
     def run_program(
         self,
         program: str,
-        config: str,
+        config: CompilerConfig,
         compile_pipeline: str | None = None,
         execute_pipeline: str | None = None,
     ) -> Results:

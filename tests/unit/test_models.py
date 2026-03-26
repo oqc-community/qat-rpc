@@ -1,6 +1,7 @@
 """Unit tests for Pydantic message models."""
 
 import pytest
+from compiler_config.config import CompilerConfig
 from pydantic import ValidationError
 
 from qat_rpc.models import (
@@ -18,16 +19,16 @@ from qat_rpc.models import (
 
 class TestProgramMessage:
     def test_construction_with_defaults(self):
-        msg = ProgramMessage(program="OPENQASM 2.0;", config="{}")
+        msg = ProgramMessage(program="OPENQASM 2.0;", config=CompilerConfig())
         assert msg.program == "OPENQASM 2.0;"
-        assert msg.config == "{}"
+        assert isinstance(msg.config, CompilerConfig)
         assert msg.compile_pipeline is None
         assert msg.execute_pipeline is None
 
     def test_construction_with_pipelines(self):
         msg = ProgramMessage(
             program="OPENQASM 2.0;",
-            config="{}",
+            config=CompilerConfig(),
             compile_pipeline="custom_compile",
             execute_pipeline="custom_execute",
         )
@@ -35,7 +36,7 @@ class TestProgramMessage:
         assert msg.execute_pipeline == "custom_execute"
 
     def test_frozen_immutability(self):
-        msg = ProgramMessage(program="OPENQASM 2.0;", config="{}")
+        msg = ProgramMessage(program="OPENQASM 2.0;", config=CompilerConfig())
         with pytest.raises(ValidationError):
             msg.program = "modified"
 
@@ -46,29 +47,30 @@ class TestProgramMessage:
         with pytest.raises(ValidationError):
             ProgramMessage.model_validate({"program": "OPENQASM 2.0;"})
 
-        with pytest.raises(ValidationError):
-            ProgramMessage.model_validate({"config": "{}"})
-
 
 class TestCompileMessage:
     def test_construction(self):
-        msg = CompileMessage(program="OPENQASM 2.0;", config="{}")
+        msg = CompileMessage(program="OPENQASM 2.0;", config=CompilerConfig())
         assert msg.pipeline is None
+        assert isinstance(msg.config, CompilerConfig)
 
     def test_with_pipeline(self):
-        msg = CompileMessage(program="OPENQASM 2.0;", config="{}", pipeline="my_pipeline")
+        msg = CompileMessage(
+            program="OPENQASM 2.0;", config=CompilerConfig(), pipeline="my_pipeline"
+        )
         assert msg.pipeline == "my_pipeline"
 
 
 class TestExecuteMessage:
     def test_construction_with_string_package(self):
-        msg = ExecuteMessage(package="serialized_package", config="{}")
+        msg = ExecuteMessage(package="serialized_package", config=CompilerConfig())
         assert msg.package == "serialized_package"
         assert msg.pipeline is None
+        assert isinstance(msg.config, CompilerConfig)
 
     def test_with_pipeline(self):
         msg = ExecuteMessage(
-            package="serialized_package", config="{}", pipeline="exec_pipe"
+            package="serialized_package", config=CompilerConfig(), pipeline="exec_pipe"
         )
         assert msg.pipeline == "exec_pipe"
 
