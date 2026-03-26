@@ -123,10 +123,16 @@ class TestValidatePort:
         assert validate_port(port_value, "test", 5556) == expected
 
     def test_excluded_port_returns_default(self):
-        assert validate_port("8080", "test", 5556, excluded_port=8080) == 5556
+        assert validate_port("8080", "test", 5556, excluded_ports={8080}) == 5556
+
+    def test_excluded_port_returns_default_multiple(self):
+        assert validate_port("8080", "test", 5556, excluded_ports={9090, 8080}) == 5556
 
     def test_non_excluded_port_accepted(self):
-        assert validate_port("8080", "test", 5556, excluded_port=9090) == 8080
+        assert validate_port("8080", "test", 5556, excluded_ports={9090}) == 8080
+
+    def test_non_excluded_port_accepted_multiple(self):
+        assert validate_port("8080", "test", 5556, excluded_ports={9090, 7070}) == 8080
 
 
 class TestResolveQatConfigPath:

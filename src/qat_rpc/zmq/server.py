@@ -177,13 +177,12 @@ def validate_port(
     port_value: str | None,
     port_name: str,
     default_port: int,
-    excluded_port: int | None = None,
+    excluded_ports: set[int] | None = None,
 ) -> int:
     """Parse and validate a port from an environment variable string.
 
     Returns *default_port* when *port_value* is ``None``, non-numeric,
-    outside the registerable range (1024-49151), or equal to
-    *excluded_port*.
+    outside the registerable range (1024-49151), or in *excluded_ports*.
     """
     if port_value is None:
         return default_port
@@ -203,7 +202,7 @@ def validate_port(
         log.info(f"Defaulting {port_name} to run on port {default_port}.")
         return default_port
 
-    if excluded_port is not None and port == excluded_port:
+    if excluded_ports is not None and port in excluded_ports:
         log.warning(
             f"{port_name.capitalize()} cannot run on port {port}, "
             f"it conflicts with another service."
@@ -284,7 +283,7 @@ def main() -> None:
         os.getenv("METRICS_PORT"),
         "metrics exporter",
         PROMETHEUS_PORT,
-        excluded_port=receiver_port,
+        excluded_ports={receiver_port},
     )
 
     metric_exporter = MetricExporter(backend=PrometheusReceiver(port=metrics_port))
