@@ -158,6 +158,8 @@ class TestMetadataQueries:
         result = getattr(_client, method_name)()
         assert key in result
         assert isinstance(result[key], expected_type)
+
+        # When testing api_version, also confirm it matches the package version
         if method_name == "api_version":
             assert result[key] == version("qat_rpc")
 

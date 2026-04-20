@@ -18,9 +18,9 @@ def base() -> ZMQBase:
     b._protocol = "tcp"
     b._ip_address = "127.0.0.1"
     b._port = 5556
-    b._socket = MagicMock()
+    b._socket = MagicMock(spec=zmq.Socket)
     b._socket.closed = False
-    b._context = MagicMock()
+    b._context = MagicMock(spec=zmq.Context)
     return b
 
 

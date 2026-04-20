@@ -3,16 +3,17 @@
 """Unit tests for ZMQ server static and pure functions."""
 
 from signal import SIGINT, SIGTERM, getsignal
+from unittest.mock import MagicMock
 
 import pytest
 from compiler_config.config import CompilerConfig
-from pydantic import BaseModel
 
 from qat_rpc.models import (
     CouplingsMessage,
     ProgramMessage,
     QpuInfoMessage,
     QubitInfoMessage,
+    Results,
     VersionMessage,
 )
 from qat_rpc.zmq.server import (
@@ -93,15 +94,13 @@ class TestSerializeResponse:
         assert ZMQServer._serialize_response(d) == d
 
     def test_pydantic_model_dump(self):
-        """Pydantic response models are converted to dicts."""
-
-        class _FakeResponse(BaseModel):
-            value: str
-
-        resp = _FakeResponse(value="hello")
+        """Response models are serialized to dicts via model_dump()."""
+        resp = MagicMock(spec=Results)
+        resp.model_dump.return_value = {"results": {"00": 100}}
         result = ZMQServer._serialize_response(resp)
-        assert result == {"value": "hello"}
+        assert result == {"results": {"00": 100}}
         assert isinstance(result, dict)
+        resp.model_dump.assert_called_once()
 
 
 class TestValidatePort:
@@ -153,29 +152,17 @@ class TestResolveQatConfigPath:
 
 
 class TestGracefulKill:
-    def create_fake_server(self):
-        """Helper to create a fake server with a stop method."""
-
-        class _FakeServer:
-            def __init__(self):
-                self.stopped = False
-
-            def stop(self):
-                self.stopped = True
-
-        return _FakeServer()
-
     @pytest.mark.parametrize("signal", [SIGINT, SIGTERM])
     def test_handle_signal_stops_server(self, signal):
-        server = self.create_fake_server()
+        server = MagicMock(spec=ZMQServer)
         guard = GracefulKill(server)
 
         guard._handle_signal(signal, None)
 
-        assert server.stopped is True
+        server.stop.assert_called_once()
 
     def test_context_manager_installs_and_restores_handlers(self):
-        server = self.create_fake_server()
+        server = MagicMock(spec=ZMQServer)
         original_sigint_handler = getsignal(SIGINT)
         original_sigterm_handler = getsignal(SIGTERM)
 
