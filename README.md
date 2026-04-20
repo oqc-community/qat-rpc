@@ -56,6 +56,10 @@ poetry run qat_comexe path/to/program.qasm --config '{"repeats": 100}'
 # After pip install
 qat_comexe path/to/program.qasm --config '{"repeats": 100}'
 
+# QIR text or binary bitcode
+poetry run qat_comexe path/to/program.ll
+poetry run qat_comexe path/to/program.bc
+
 # Pass a program string directly
 poetry run qat_comexe "OPENQASM 2.0; ..." --host 192.168.1.10 --port 5556
 ```

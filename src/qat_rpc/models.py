@@ -32,7 +32,7 @@ class _FrozenMessage(BaseModel):
 class ProgramMessage(_FrozenMessage):
     """Compile and execute a program in a single round-trip."""
 
-    program: str
+    program: str | bytes
     config: CompilerConfig
     compile_pipeline: str | None = None
     execute_pipeline: str | None = None
@@ -41,7 +41,7 @@ class ProgramMessage(_FrozenMessage):
 class CompileMessage(_FrozenMessage):
     """Compile a program without executing it."""
 
-    program: str
+    program: str | bytes
     config: CompilerConfig
     pipeline: str | None = None
 

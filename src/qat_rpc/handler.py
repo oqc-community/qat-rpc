@@ -75,7 +75,7 @@ class QATServiceHandler:
     # --- Operations ---
 
     def compile(
-        self, program: str, config: CompilerConfig, pipeline: str | None = None
+        self, program: str | bytes, config: CompilerConfig, pipeline: str | None = None
     ) -> CompiledProgram:
         """Compile *program* and return the compiled package with metrics."""
         if pipeline is None:
@@ -97,7 +97,7 @@ class QATServiceHandler:
 
     def run_program(
         self,
-        program: str,
+        program: str | bytes,
         config: CompilerConfig,
         compile_pipeline: str | None = None,
         execute_pipeline: str | None = None,

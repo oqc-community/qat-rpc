@@ -4,6 +4,7 @@
 
 import threading
 from importlib.metadata import version
+from pathlib import Path
 
 import pytest
 from compiler_config.config import CompilerConfig
@@ -12,13 +13,52 @@ from qat_rpc.metrics import PROMETHEUS_PORT, MetricExporter, PrometheusReceiver
 from qat_rpc.zmq.client import ZMQClient
 from qat_rpc.zmq.server import ZMQServer
 
-PROGRAM = """
+PROGRAM_DATA = Path(__file__).parent / "program_data"
+
+QASM2_PROGRAM = """
 OPENQASM 2.0;
 include "qelib1.inc";
 qreg q[2];
 h q;
 creg c[2];
 measure q->c;
+"""
+
+QASM3_PROGRAM = """\
+OPENQASM 3;
+bit[2] c;
+qubit[2] q;
+h q;
+measure q -> c;
+"""
+
+QIR_TEXT_PROGRAM = """\
+; ModuleID = 'basic'
+source_filename = "basic"
+
+%Qubit = type opaque
+%Result = type opaque
+
+define void @main() #0 {
+entry:
+  call void @__quantum__qis__h__body(%Qubit* inttoptr (i64 0 to %Qubit*))
+  call void @__quantum__qis__h__body(%Qubit* inttoptr (i64 1 to %Qubit*))
+  call void @__quantum__qis__mz__body(%Qubit* inttoptr (i64 0 to %Qubit*), %Result* inttoptr (i64 0 to %Result*))
+  call void @__quantum__qis__mz__body(%Qubit* inttoptr (i64 1 to %Qubit*), %Result* inttoptr (i64 1 to %Result*))
+  call void @__quantum__rt__result_record_output(%Result* inttoptr (i64 0 to %Result*), i8* null)
+  call void @__quantum__rt__result_record_output(%Result* inttoptr (i64 1 to %Result*), i8* null)
+  ret void
+}
+
+declare void @__quantum__qis__x__body(%Qubit*)
+
+declare void @__quantum__qis__h__body(%Qubit*)
+
+declare void @__quantum__qis__mz__body(%Qubit*, %Result*)
+
+declare void @__quantum__rt__result_record_output(%Result*, i8*)
+
+attributes #0 = { "EntryPoint" "requiredQubits"="2" "requiredResults"="2" }
 """
 
 
@@ -48,12 +88,28 @@ def _make_config(repeats: int = 100) -> CompilerConfig:
 
 class TestExecuteRoundTrip:
     def test_execute_task(self, _client):
-        response = _client.execute_task(PROGRAM, _make_config(100))
+        response = _client.execute_task(QASM2_PROGRAM, _make_config(100))
         assert response["results"]["c"]["00"] == 100
+
+    @pytest.mark.parametrize(
+        ("program", "label"),
+        [
+            pytest.param(QASM3_PROGRAM, "qasm3", id="qasm3"),
+            pytest.param(QIR_TEXT_PROGRAM, "qir-text", id="qir-text"),
+            pytest.param(
+                (PROGRAM_DATA / "basic.bc").read_bytes(), "qir-binary", id="qir-binary"
+            ),
+        ],
+    )
+    def test_program_formats(self, _client, program, label):
+        """All supported program formats produce a results dict."""
+        response = _client.execute_task(program, _make_config(100))
+        assert "results" in response, f"{label}: missing 'results' key"
+        assert isinstance(response["results"], dict), f"{label}: results is not a dict"
 
     def test_legacy_tuple_format(self, _client):
         """Pre-1.0 tuple wire format still works end-to-end."""
-        _client._send(("program", PROGRAM, _make_config(100).to_json()))
+        _client._send(("program", QASM2_PROGRAM, _make_config(100).to_json()))
         response = _client._await_results()
         assert response["results"]["c"]["00"] == 100
 
@@ -71,7 +127,7 @@ class TestExecuteRoundTrip:
         def _run(repeats, expected):
             try:
                 client = ZMQClient()
-                response = client.execute_task(PROGRAM, _make_config(repeats))
+                response = client.execute_task(QASM2_PROGRAM, _make_config(repeats))
                 assert response["results"] == expected
             except Exception as e:
                 errors.append(e)

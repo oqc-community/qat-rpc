@@ -61,12 +61,15 @@ class ZMQClient(ZMQBase):
 
     def execute_task(
         self,
-        program: str,
+        program: str | bytes,
         config: CompilerConfig | str | None = None,
         compile_pipeline: str | None = None,
         execute_pipeline: str | None = None,
     ) -> dict[str, Any]:
         """Compile and execute a program.
+
+        :param program: An OpenQASM 2.0, OpenQASM 3.0, or QIR program.
+            Accepts a source string (QASM / QIR text) or raw QIR bitcode bytes.
 
         Pipeline arguments are optional; the server uses its defaults when omitted.
         """
@@ -81,11 +84,15 @@ class ZMQClient(ZMQBase):
 
     def compile_program(
         self,
-        program: str,
+        program: str | bytes,
         config: CompilerConfig | str | None = None,
         pipeline: str | None = None,
     ) -> dict[str, Any]:
-        """Compile a program, optionally targeting a specific pipeline."""
+        """Compile a program, optionally targeting a specific pipeline.
+
+        :param program: An OpenQASM 2.0, OpenQASM 3.0, or QIR program.
+            Accepts a source string (QASM / QIR text) or raw QIR bitcode bytes.
+        """
         return self._send_and_receive(
             CompileMessage(
                 program=program,

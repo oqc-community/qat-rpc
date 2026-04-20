@@ -31,6 +31,14 @@ class TestReadFileOrString:
             client_cli._read_file_or_string(str(program_file), "program") == "OPENQASM 2.0;"
         )
 
+    def test_reads_bc_file_as_bytes(self, tmp_path):
+        bc_file = tmp_path / "program.bc"
+        bc_file.write_bytes(b"BC\xc0\xde")
+
+        result = client_cli._read_file_or_string(str(bc_file), "program")
+        assert result == b"BC\xc0\xde"
+        assert isinstance(result, bytes)
+
     def test_read_failure_exits_with_code_1(self, tmp_path):
         unreadable = tmp_path / "program.qasm"
         unreadable.write_text("content")
