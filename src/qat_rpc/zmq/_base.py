@@ -35,31 +35,35 @@ class ZMQBase:
     def address(self) -> str:
         return f"{self._protocol}://{self._ip_address}:{self._port}"
 
-    def _receive(self, timeout: float | None = None, raise_on_timeout: bool = False) -> Any:
-        """Receive a pickled object, optionally blocking up to *timeout* seconds.
+    def _receive(self, timeout: float | None = None) -> Any:
+        """Receive a pickled object from the socket.
 
-        Returns ``None`` on timeout when *raise_on_timeout* is ``False``.
+        When *timeout* is ``None`` the call is non-blocking (``NOBLOCK``);
+        ``EAGAIN`` and ``ETERM`` errors return ``None`` silently, which is
+        the expected behaviour for a server polling loop.
+
+        When *timeout* is a float the call blocks for up to that many
+        seconds.  ``EAGAIN`` raises ``TimeoutError``; ``ETERM`` re-raises
+        the underlying ``ZMQError``.
         """
         try:
             if timeout is None:
-                # Non-blocking receive
                 msg = self._socket.recv_pyobj(zmq.NOBLOCK)
             else:
-                # Blocking receive with timeout
                 self._socket.setsockopt(zmq.RCVTIMEO, int(timeout * 1000))
                 msg = self._socket.recv_pyobj()
         except zmq.ZMQError as e:
             if e.errno == zmq.EAGAIN:
-                if raise_on_timeout:
+                if timeout is not None:
                     raise TimeoutError(
                         f"Receiving from {self.address} timed out after {timeout} seconds."
                     )
                 return None
 
             if e.errno == zmq.ETERM:
-                log.info("Context terminated, shutting down socket.")
-                if raise_on_timeout:
+                if timeout is not None:
                     raise
+                log.info("Context terminated, shutting down socket.")
                 return None
 
             raise

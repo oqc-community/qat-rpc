@@ -48,10 +48,10 @@ class TestReceive:
         base._socket.recv_pyobj.assert_called_once_with()
 
     @pytest.mark.parametrize("error_code", [zmq.EAGAIN, zmq.ETERM])
-    def test_error_returns_none_when_not_raising(self, base, error_code):
+    def test_non_blocking_error_returns_none(self, base, error_code):
         base._socket.recv_pyobj.side_effect = zmq.ZMQError(error_code)
 
-        result = base._receive(timeout=0.1, raise_on_timeout=False)
+        result = base._receive(timeout=None)
 
         assert result is None
 
@@ -62,11 +62,11 @@ class TestReceive:
             (zmq.ETERM, zmq.ZMQError),
         ],
     )
-    def test_error_raises_when_requested(self, base, error_code, expected_exception):
+    def test_blocking_error_raises(self, base, error_code, expected_exception):
         base._socket.recv_pyobj.side_effect = zmq.ZMQError(error_code)
 
         with pytest.raises(expected_exception):
-            base._receive(timeout=0.1, raise_on_timeout=True)
+            base._receive(timeout=0.1)
 
 
 class TestSend:

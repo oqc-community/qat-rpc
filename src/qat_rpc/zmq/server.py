@@ -142,7 +142,7 @@ class ZMQServer(ZMQBase):
 
         while self._running:
             try:
-                raw = self._receive(timeout=None, raise_on_timeout=False)
+                raw = self._receive(timeout=None)
                 if raw is None:
                     continue
 

@@ -45,7 +45,7 @@ class ZMQClient(ZMQBase):
 
     def _await_results(self) -> dict[str, Any]:
         """Block until the server replies, raising on timeout."""
-        return self._receive(timeout=self._timeout, raise_on_timeout=True)
+        return self._receive(timeout=self._timeout)
 
     def _send_and_receive(self, request: Request) -> dict[str, Any]:
         """Send a request and return the server's reply."""
