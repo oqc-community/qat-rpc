@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """ZMQ REP server and entrypoint for QAT RPC.
 
 ``ZMQServer`` binds a REP socket that accepts both typed ``Message``

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """Unit tests for shared ZMQ base socket behavior."""
 
 from unittest.mock import MagicMock, call

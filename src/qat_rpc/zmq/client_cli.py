@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """Command-line interface for submitting programs to a QAT RPC server.
 
 Exposed as the ``qat_comexe`` console script.

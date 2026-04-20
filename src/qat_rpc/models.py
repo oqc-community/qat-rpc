@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """Wire protocol vocabulary for QAT RPC.
 
 Pydantic models that define the RPC message contract between client and

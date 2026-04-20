@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """Pluggable metrics framework for QAT RPC.
 
 Backends (e.g. ``PrometheusReceiver``) define the metrics surface.
