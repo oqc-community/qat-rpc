@@ -78,7 +78,7 @@ class TestExecuteMessage:
 class TestVersionMessage:
     def test_construction(self):
         msg = VersionMessage()
-        assert msg is not None
+        assert msg.model_dump() == {}
 
 
 class TestHardwareInfoMessages:
@@ -103,4 +103,4 @@ class TestPipelineQueryMessages:
     )
     def test_construction(self, message_cls):
         msg = message_cls()
-        assert msg is not None
+        assert msg.model_dump() == {}
