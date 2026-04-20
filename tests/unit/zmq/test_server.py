@@ -9,12 +9,12 @@ import pytest
 from compiler_config.config import CompilerConfig
 
 from qat_rpc.models import (
-    CouplingsMessage,
-    ProgramMessage,
-    QpuInfoMessage,
-    QubitInfoMessage,
+    CouplingsRequest,
+    ProgramRequest,
+    QpuInfoRequest,
+    QubitInfoRequest,
     Results,
-    VersionMessage,
+    VersionRequest,
 )
 from qat_rpc.zmq.server import (
     GracefulKill,
@@ -29,7 +29,7 @@ class TestConvertLegacyMessage:
         """Pre-0.3.0 format: (program_str, config_str) without type tag."""
         config = CompilerConfig().to_json()
         msg = ZMQServer._convert_legacy_message(("OPENQASM 2.0;", config))
-        assert isinstance(msg, ProgramMessage)
+        assert isinstance(msg, ProgramRequest)
         assert msg.program == "OPENQASM 2.0;"
         assert isinstance(msg.config, CompilerConfig)
 
@@ -37,7 +37,7 @@ class TestConvertLegacyMessage:
         """0.3.0 -> 0.6.0 format: ("program", code, config)."""
         config = CompilerConfig().to_json()
         msg = ZMQServer._convert_legacy_message(("program", "OPENQASM 2.0;", config))
-        assert isinstance(msg, ProgramMessage)
+        assert isinstance(msg, ProgramRequest)
         assert msg.program == "OPENQASM 2.0;"
 
     def test_tagged_program_with_pipelines(self):
@@ -45,7 +45,7 @@ class TestConvertLegacyMessage:
         msg = ZMQServer._convert_legacy_message(
             ("program", "OPENQASM 2.0;", config, "compile_pipe", "exec_pipe")
         )
-        assert isinstance(msg, ProgramMessage)
+        assert isinstance(msg, ProgramRequest)
         assert msg.compile_pipeline == "compile_pipe"
         assert msg.execute_pipeline == "exec_pipe"
 
@@ -54,20 +54,20 @@ class TestConvertLegacyMessage:
         msg = ZMQServer._convert_legacy_message(
             ("program", "OPENQASM 2.0;", config, "", "")
         )
-        assert isinstance(msg, ProgramMessage)
+        assert isinstance(msg, ProgramRequest)
         assert msg.compile_pipeline is None
         assert msg.execute_pipeline is None
 
     @pytest.mark.parametrize(
         ("raw", "expected_cls"),
         [
-            (("version",), VersionMessage),
-            (("couplings",), CouplingsMessage),
-            (("qubit_info",), QubitInfoMessage),
-            (("qpu_info",), QpuInfoMessage),
+            (("version",), VersionRequest),
+            (("couplings",), CouplingsRequest),
+            (("qubit_info",), QubitInfoRequest),
+            (("qpu_info",), QpuInfoRequest),
         ],
     )
-    def test_tagged_metadata_messages(self, raw, expected_cls):
+    def test_tagged_metadata_requests(self, raw, expected_cls):
         msg = ZMQServer._convert_legacy_message(raw)
         assert isinstance(msg, expected_cls)
 

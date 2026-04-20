@@ -2,7 +2,7 @@
 # Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """ZMQ REP server and entrypoint for QAT RPC.
 
-``ZMQServer`` binds a REP socket that accepts both typed ``Message``
+``ZMQServer`` binds a REP socket that accepts both typed ``Request``
 objects and legacy tuple formats (pre-1.0 clients), delegating all
 business logic to ``QATServiceHandler``.
 
@@ -22,13 +22,13 @@ from qat.purr.utils.logger import get_default_logger
 from qat_rpc.handler import QATServiceHandler
 from qat_rpc.metrics import PROMETHEUS_PORT, MetricExporter, PrometheusReceiver
 from qat_rpc.models import (
-    CouplingsMessage,
-    Message,
-    ProgramMessage,
-    QpuInfoMessage,
-    QubitInfoMessage,
+    CouplingsRequest,
+    ProgramRequest,
+    QpuInfoRequest,
+    QubitInfoRequest,
+    Request,
     Response,
-    VersionMessage,
+    VersionRequest,
 )
 from qat_rpc.zmq._base import ZMQBase
 
@@ -40,8 +40,8 @@ log = get_default_logger()
 class ZMQServer(ZMQBase):
     """ZMQ REP server — receive, dispatch, reply.
 
-    Wraps a REP socket that blocks for incoming messages, converts legacy
-    tuple formats if necessary, and forwards typed ``Message`` objects to
+    Wraps a REP socket that blocks for incoming requests, converts legacy
+    tuple formats if necessary, and forwards typed ``Request`` objects to
     ``QATServiceHandler.handle``.  Responses are serialised back to plain
     dicts for backwards compatibility.
     """
@@ -63,8 +63,8 @@ class ZMQServer(ZMQBase):
         return f"{self._protocol}://*:{self._port}"
 
     @staticmethod
-    def _convert_legacy_message(raw: tuple[Any, ...]) -> Message:
-        """Convert a legacy tuple into a typed ``Message``.
+    def _convert_legacy_message(raw: tuple[Any, ...]) -> Request:
+        """Convert a legacy tuple into a typed ``Request``.
 
         Two legacy wire formats are supported:
 
@@ -73,7 +73,7 @@ class ZMQServer(ZMQBase):
           e.g. ``("program", code, config)`` or ``("version",)``.
 
         Only operations that existed in legacy versions are handled here;
-        ``compile`` and ``execute`` were introduced with typed messages
+        ``compile`` and ``execute`` were introduced with typed requests
         and have no legacy tuple form.
         """
         if not raw:
@@ -87,7 +87,7 @@ class ZMQServer(ZMQBase):
             "qubit_info",
             "qpu_info",
         }:
-            return ProgramMessage(
+            return ProgramRequest(
                 program=raw[0], config=CompilerConfig.create_from_json(raw[1])
             )
 
@@ -100,12 +100,12 @@ class ZMQServer(ZMQBase):
         match msg_type:
             case "program":
                 if len(args) == 2:
-                    return ProgramMessage(
+                    return ProgramRequest(
                         program=args[0],
                         config=CompilerConfig.create_from_json(args[1]),
                     )
                 if len(args) == 4:
-                    return ProgramMessage(
+                    return ProgramRequest(
                         program=args[0],
                         config=CompilerConfig.create_from_json(args[1]),
                         compile_pipeline=args[2] or None,
@@ -113,13 +113,13 @@ class ZMQServer(ZMQBase):
                     )
                 raise ValueError(f"PROGRAM message expects 2 or 4 args, got {len(args)}.")
             case "version":
-                return VersionMessage()
+                return VersionRequest()
             case "couplings":
-                return CouplingsMessage()
+                return CouplingsRequest()
             case "qubit_info":
-                return QubitInfoMessage()
+                return QubitInfoRequest()
             case "qpu_info":
-                return QpuInfoMessage()
+                return QpuInfoRequest()
             case _:
                 raise ValueError(f"Unrecognized legacy message type: {msg_type}")
 

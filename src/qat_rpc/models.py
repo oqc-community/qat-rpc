@@ -2,8 +2,8 @@
 # Copyright (c) 2023-2026 Oxford Quantum Circuits Ltd
 """Wire protocol vocabulary for QAT RPC.
 
-Pydantic models that define the RPC message contract between client and
-server, plus the ``Message`` and ``Response`` type aliases used across
+Pydantic models that define the RPC request/response contract between client
+and server, plus the ``Request`` and ``Response`` type aliases used across
 the handler and transport layers.
 """
 
@@ -18,10 +18,10 @@ from qat.purr.compiler.builders import InstructionBuilder
 # --- Request messages (client -> server) ---
 
 
-class _FrozenMessage(BaseModel):
+class _FrozenRequest(BaseModel):
     """Immutable base for request messages.
 
-    Frozen so messages are hashable and cannot be mutated after creation.
+    Frozen so requests are hashable and cannot be mutated after creation.
     ``arbitrary_types_allowed`` permits QAT-internal types like
     ``InstructionBuilder`` and ``CompilerConfig`` as fields.
     """
@@ -29,7 +29,7 @@ class _FrozenMessage(BaseModel):
     model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
 
 
-class ProgramMessage(_FrozenMessage):
+class ProgramRequest(_FrozenRequest):
     """Compile and execute a program in a single round-trip."""
 
     program: str | bytes
@@ -38,7 +38,7 @@ class ProgramMessage(_FrozenMessage):
     execute_pipeline: str | None = None
 
 
-class CompileMessage(_FrozenMessage):
+class CompileRequest(_FrozenRequest):
     """Compile a program without executing it."""
 
     program: str | bytes
@@ -46,7 +46,7 @@ class CompileMessage(_FrozenMessage):
     pipeline: str | None = None
 
 
-class ExecuteMessage(_FrozenMessage):
+class ExecuteRequest(_FrozenRequest):
     """Execute a previously compiled package."""
 
     package: InstructionBuilder | Executable | str
@@ -54,46 +54,46 @@ class ExecuteMessage(_FrozenMessage):
     pipeline: str | None = None
 
 
-class VersionMessage(_FrozenMessage):
+class VersionRequest(_FrozenRequest):
     """Request the server's API version."""
 
 
-class CouplingsMessage(_FrozenMessage):
+class CouplingsRequest(_FrozenRequest):
     """Request qubit coupling directions from the hardware model."""
 
     pipeline: str | None = None
 
 
-class QubitInfoMessage(_FrozenMessage):
+class QubitInfoRequest(_FrozenRequest):
     """Request per-qubit hardware information."""
 
     pipeline: str | None = None
 
 
-class QpuInfoMessage(_FrozenMessage):
+class QpuInfoRequest(_FrozenRequest):
     """Request aggregate QPU hardware information."""
 
     pipeline: str | None = None
 
 
-class CompilePipelinesMessage(_FrozenMessage):
+class CompilePipelinesRequest(_FrozenRequest):
     """Request the list of available compile pipelines."""
 
 
-class ExecutePipelinesMessage(_FrozenMessage):
+class ExecutePipelinesRequest(_FrozenRequest):
     """Request the list of available execute pipelines."""
 
 
-Message = (
-    ProgramMessage
-    | CompileMessage
-    | ExecuteMessage
-    | VersionMessage
-    | CouplingsMessage
-    | QubitInfoMessage
-    | QpuInfoMessage
-    | CompilePipelinesMessage
-    | ExecutePipelinesMessage
+Request = (
+    ProgramRequest
+    | CompileRequest
+    | ExecuteRequest
+    | VersionRequest
+    | CouplingsRequest
+    | QubitInfoRequest
+    | QpuInfoRequest
+    | CompilePipelinesRequest
+    | ExecutePipelinesRequest
 )
 
 

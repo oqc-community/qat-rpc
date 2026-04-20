@@ -10,16 +10,16 @@ from qat.executables import Executable
 from qat.purr.compiler.builders import InstructionBuilder
 
 from qat_rpc.models import (
-    CompileMessage,
-    CompilePipelinesMessage,
-    CouplingsMessage,
-    ExecuteMessage,
-    ExecutePipelinesMessage,
-    Message,
-    ProgramMessage,
-    QpuInfoMessage,
-    QubitInfoMessage,
-    VersionMessage,
+    CompilePipelinesRequest,
+    CompileRequest,
+    CouplingsRequest,
+    ExecutePipelinesRequest,
+    ExecuteRequest,
+    ProgramRequest,
+    QpuInfoRequest,
+    QubitInfoRequest,
+    Request,
+    VersionRequest,
 )
 from qat_rpc.zmq._base import ZMQBase
 
@@ -27,7 +27,7 @@ from qat_rpc.zmq._base import ZMQBase
 class ZMQClient(ZMQBase):
     """ZMQ REQ client - one method per RPC operation.
 
-    Each public method constructs the appropriate ``Message``, sends it,
+    Each public method constructs the appropriate ``Request``, sends it,
     and blocks until the server replies.  Responses are always plain dicts
     (see ``ZMQServer._serialize_response``).
     """
@@ -47,9 +47,9 @@ class ZMQClient(ZMQBase):
         """Block until the server replies, raising on timeout."""
         return self._receive(timeout=self._timeout, raise_on_timeout=True)
 
-    def _send_and_receive(self, message: Message) -> dict[str, Any]:
-        """Send a message and return the server's reply."""
-        self._send(message)
+    def _send_and_receive(self, request: Request) -> dict[str, Any]:
+        """Send a request and return the server's reply."""
+        self._send(request)
         return self._await_results()
 
     @staticmethod
@@ -74,7 +74,7 @@ class ZMQClient(ZMQBase):
         Pipeline arguments are optional; the server uses its defaults when omitted.
         """
         return self._send_and_receive(
-            ProgramMessage(
+            ProgramRequest(
                 program=program,
                 config=self._build_config(config),
                 compile_pipeline=compile_pipeline,
@@ -94,7 +94,7 @@ class ZMQClient(ZMQBase):
             Accepts a source string (QASM / QIR text) or raw QIR bitcode bytes.
         """
         return self._send_and_receive(
-            CompileMessage(
+            CompileRequest(
                 program=program,
                 config=self._build_config(config),
                 pipeline=pipeline,
@@ -109,7 +109,7 @@ class ZMQClient(ZMQBase):
     ) -> dict[str, Any]:
         """Execute a pre-compiled program, optionally targeting a specific pipeline."""
         return self._send_and_receive(
-            ExecuteMessage(
+            ExecuteRequest(
                 package=compiled_program,
                 config=self._build_config(config),
                 pipeline=pipeline,
@@ -118,24 +118,24 @@ class ZMQClient(ZMQBase):
 
     def api_version(self) -> dict[str, Any]:
         """Request the server's API version."""
-        return self._send_and_receive(VersionMessage())
+        return self._send_and_receive(VersionRequest())
 
     def qpu_couplings(self, pipeline: str | None = None) -> dict[str, Any]:
         """Request qubit coupling directions."""
-        return self._send_and_receive(CouplingsMessage(pipeline=pipeline))
+        return self._send_and_receive(CouplingsRequest(pipeline=pipeline))
 
     def qubit_info(self, pipeline: str | None = None) -> dict[str, Any]:
         """Request individual qubit information."""
-        return self._send_and_receive(QubitInfoMessage(pipeline=pipeline))
+        return self._send_and_receive(QubitInfoRequest(pipeline=pipeline))
 
     def qpu_info(self, pipeline: str | None = None) -> dict[str, Any]:
         """Request QPU hardware information."""
-        return self._send_and_receive(QpuInfoMessage(pipeline=pipeline))
+        return self._send_and_receive(QpuInfoRequest(pipeline=pipeline))
 
     def compile_pipelines(self) -> dict[str, Any]:
         """Request the list of available compile pipelines."""
-        return self._send_and_receive(CompilePipelinesMessage())
+        return self._send_and_receive(CompilePipelinesRequest())
 
     def execute_pipelines(self) -> dict[str, Any]:
         """Request the list of available execute pipelines."""
-        return self._send_and_receive(ExecutePipelinesMessage())
+        return self._send_and_receive(ExecutePipelinesRequest())

@@ -17,18 +17,18 @@ from qat.purr.utils.logger import get_default_logger
 from qat_rpc.metrics import MetricExporter
 from qat_rpc.models import (
     CompiledProgram,
-    CompileMessage,
-    CompilePipelinesMessage,
-    CouplingsMessage,
-    ExecuteMessage,
-    ExecutePipelinesMessage,
-    Message,
-    ProgramMessage,
-    QpuInfoMessage,
-    QubitInfoMessage,
+    CompilePipelinesRequest,
+    CompileRequest,
+    CouplingsRequest,
+    ExecutePipelinesRequest,
+    ExecuteRequest,
+    ProgramRequest,
+    QpuInfoRequest,
+    QubitInfoRequest,
+    Request,
     Response,
     Results,
-    VersionMessage,
+    VersionRequest,
 )
 
 log = get_default_logger()
@@ -159,11 +159,11 @@ class QATServiceHandler:
 
     # --- Message dispatch ---
 
-    def handle(self, message: Message) -> Response:
-        """Dispatch a ``Message`` to the corresponding operation and return its response."""
-        log.info(f"Handling message: {message}")
-        match message:
-            case ProgramMessage(
+    def handle(self, request: Request) -> Response:
+        """Dispatch a ``Request`` to the corresponding operation and return its response."""
+        log.info(f"Handling request: {request}")
+        match request:
+            case ProgramRequest(
                 program=program,
                 config=config,
                 compile_pipeline=compile_pipeline,
@@ -171,29 +171,29 @@ class QATServiceHandler:
             ):
                 return self.run_program(program, config, compile_pipeline, execute_pipeline)
 
-            case CompileMessage(program=program, config=config, pipeline=pipeline):
+            case CompileRequest(program=program, config=config, pipeline=pipeline):
                 return self.compile(program, config, pipeline)
 
-            case ExecuteMessage(package=package, config=config, pipeline=pipeline):
+            case ExecuteRequest(package=package, config=config, pipeline=pipeline):
                 return self.execute(package, config, pipeline)
 
-            case VersionMessage():
+            case VersionRequest():
                 return self.version()
 
-            case CouplingsMessage(pipeline=pipeline):
+            case CouplingsRequest(pipeline=pipeline):
                 return self.couplings(pipeline)
 
-            case QubitInfoMessage(pipeline=pipeline):
+            case QubitInfoRequest(pipeline=pipeline):
                 return self.qubit_info(pipeline)
 
-            case QpuInfoMessage(pipeline=pipeline):
+            case QpuInfoRequest(pipeline=pipeline):
                 return self.qpu_info(pipeline)
 
-            case CompilePipelinesMessage():
+            case CompilePipelinesRequest():
                 return self.compile_pipelines()
 
-            case ExecutePipelinesMessage():
+            case ExecutePipelinesRequest():
                 return self.execute_pipelines()
 
             case _:
-                raise ValueError(f"Unrecognized message: {message}")
+                raise ValueError(f"Unrecognized request: {request}")
