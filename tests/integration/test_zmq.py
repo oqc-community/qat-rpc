@@ -60,6 +60,7 @@ class TestExecuteRoundTrip:
         _client._send(("program", [4, 5, 6], _make_config().to_json()))
         response = _client._await_results()
         assert "Exception" in response
+        assert "validation error" in response["Exception"]
 
     def test_concurrent_clients(self):
         """Results are routed to the correct client across threads."""
@@ -106,6 +107,7 @@ class TestMetadataQueries:
         """qubit_info is not implemented — server returns an Exception dict."""
         result = _client.qubit_info()
         assert "Exception" in result
+        assert "NotImplementedError" in result["Exception"]
 
     def test_compile_pipelines(self, _client):
         result = _client.compile_pipelines()
