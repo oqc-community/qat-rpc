@@ -153,6 +153,7 @@ DEP003 = ["compiler_config"]
 ignore-packages = [
   "docutils",
   "psycopg2",
+  "PySquashfsImage",
   "qat-rpc"
 ]
 fail-on = "GNU General Public License (GPL);GNU Library or Lesser General Public License (LGPL)"
