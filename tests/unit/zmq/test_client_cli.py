@@ -1,38 +1,18 @@
 """Unit tests for command-line client behavior."""
 
+from unittest.mock import MagicMock
+
 import pytest
 
 import qat_rpc.zmq.client_cli as client_cli
 
 
-class _FakeClient:
-    """Records constructor and execute_task arguments."""
-
-    result = None
-    error = None
-    instance = None
-
-    def __init__(self, client_ip, client_port):
-        self.client_ip = client_ip
-        self.client_port = client_port
-        _FakeClient.instance = self
-
-    def execute_task(self, program, config):
-        self.program = program
-        self.config = config
-        if self.error is not None:
-            raise self.error
-        return self.result
-
-
 @pytest.fixture()
 def fake_client(monkeypatch):
-    """Patch ZMQClient with _FakeClient, reset class state between tests."""
-    _FakeClient.result = None
-    _FakeClient.error = None
-    _FakeClient.instance = None
-    monkeypatch.setattr(client_cli, "ZMQClient", _FakeClient)
-    return _FakeClient
+    """Patch ZMQClient with a MagicMock, reset between tests."""
+    mock_cls = MagicMock()
+    monkeypatch.setattr(client_cli, "ZMQClient", mock_cls)
+    return mock_cls
 
 
 class TestReadFileOrString:
@@ -62,15 +42,12 @@ class TestReadFileOrString:
 
 class TestQatRun:
     def test_success_with_inline_program(self, fake_client, capsys):
-        fake_client.result = {"ok": True}
+        fake_client.return_value.execute_task.return_value = {"ok": True}
 
         client_cli.qat_run(["OPENQASM 2.0;"])
 
-        client = fake_client.instance
-        assert client.client_ip == "127.0.0.1"
-        assert client.client_port == 5556
-        assert client.program == "OPENQASM 2.0;"
-        assert client.config is None
+        fake_client.assert_called_once_with(client_ip="127.0.0.1", client_port=5556)
+        fake_client.return_value.execute_task.assert_called_once_with("OPENQASM 2.0;", None)
         assert "{'ok': True}" in capsys.readouterr().out
 
     def test_success_with_program_and_config_files(self, tmp_path, fake_client):
@@ -79,7 +56,7 @@ class TestQatRun:
         program_file.write_text("OPENQASM 2.0;")
         config_file.write_text('{"repeats": 10}')
 
-        fake_client.result = {"results": {}}
+        fake_client.return_value.execute_task.return_value = {"results": {}}
 
         client_cli.qat_run(
             [
@@ -93,15 +70,14 @@ class TestQatRun:
             ]
         )
 
-        client = fake_client.instance
-        assert client.client_ip == "localhost"
-        assert client.client_port == 6000
-        assert client.program == "OPENQASM 2.0;"
-        assert client.config == '{"repeats": 10}'
+        fake_client.assert_called_once_with(client_ip="localhost", client_port=6000)
+        fake_client.return_value.execute_task.assert_called_once_with(
+            "OPENQASM 2.0;", '{"repeats": 10}'
+        )
 
     @pytest.mark.parametrize("error", [TimeoutError("timeout"), RuntimeError("boom")])
     def test_errors_exit_with_code_1(self, fake_client, error):
-        fake_client.error = error
+        fake_client.return_value.execute_task.side_effect = error
 
         with pytest.raises(SystemExit, match="1"):
             client_cli.qat_run(["OPENQASM 2.0;"])
