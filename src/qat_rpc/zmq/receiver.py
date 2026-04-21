@@ -16,7 +16,7 @@ _warnings.warn(
     stacklevel=2,
 )
 
-from qat_rpc.zmq.server import (  # noqa: E402, F401
+from qat_rpc.zmq.server import (
     RECEIVER_PORT,
     GracefulKill,
     main,

@@ -118,11 +118,24 @@ class QATServiceHandler:
         return {"qat_rpc_version": __version__}
 
     def couplings(self, pipeline: str | None = None) -> dict[str, list]:
-        """Return qubit coupling directions from the hardware model."""
-        coupling_list = [
-            coupled.direction
-            for coupled in self._get_hardware(pipeline).qubit_direction_couplings  # pyright: ignore[reportAttributeAccessIssue]
-        ]
+        """Return qubit couplings from the active hardware model.
+
+        For PuRR ``QuantumHardwareModel`` we use ``qubit_direction_couplings``.
+        For pydantic ``PhysicalHardwareModel`` we currently project directed
+        edges from ``logical_connectivity``.
+        """
+        hardware = self._get_hardware(pipeline)
+        if isinstance(hardware, QuantumHardwareModel):
+            coupling_list = [
+                coupled.direction for coupled in hardware.qubit_direction_couplings
+            ]
+        else:
+            logical_connectivity = hardware.logical_connectivity or {}
+            coupling_list = [
+                (q1, q2)
+                for q1, connected_qubits in logical_connectivity.items()
+                for q2 in connected_qubits
+            ]
         return {"couplings": coupling_list}
 
     def qubit_info(self, pipeline: str | None = None) -> dict[str, Any]:
@@ -148,8 +161,10 @@ class QATServiceHandler:
     def qpu_info(self, pipeline: str | None = None) -> dict[str, Any]:
         """Return aggregate QPU hardware information via OpenPulse."""
         hardware = self._get_hardware(pipeline)
-        # Currently there is an issue with Pydantic Echo pipelines returning 1s instead of 0s
-        # as a result we are using the Purr echo pipeline, however this uses a QuantumHardwareModel so requires a different method for extracting the OpenPulse features.
+        # Currently there is an issue with Pydantic Echo pipelines returning
+        # 1s instead of 0s. As a result we use the PuRR echo pipeline, which
+        # uses a QuantumHardwareModel and requires a different method for
+        # extracting the OpenPulse features.
         if isinstance(hardware, QuantumHardwareModel):
             features = PurrOpenPulseFeatures()
             features.for_hardware(hardware)

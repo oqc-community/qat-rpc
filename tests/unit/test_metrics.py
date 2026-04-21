@@ -52,7 +52,7 @@ class TestMetricExporterValidation:
 
 
 class TestBinaryOutcomeContextManager:
-    @pytest.fixture()
+    @pytest.fixture
     def backend(self):
         return _FakeBinaryBackend()
 
@@ -87,7 +87,7 @@ class TestBinaryOutcomeContextManager:
 
 
 class TestIncrementOutcomeContextManager:
-    @pytest.fixture()
+    @pytest.fixture
     def backend(self):
         return _FakeIncrementBackend()
 

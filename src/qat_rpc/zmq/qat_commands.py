@@ -15,6 +15,6 @@ _warnings.warn(
     stacklevel=2,
 )
 
-from qat_rpc.zmq.client_cli import qat_run  # noqa: E402, F401
+from qat_rpc.zmq.client_cli import qat_run
 
 __all__ = ["qat_run"]

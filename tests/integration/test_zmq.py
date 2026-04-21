@@ -74,7 +74,7 @@ def _server():
     server.stop()
 
 
-@pytest.fixture()
+@pytest.fixture
 def _client() -> ZMQClient:
     return ZMQClient()
 

@@ -10,7 +10,7 @@ import zmq
 from qat_rpc.zmq._base import ZMQBase
 
 
-@pytest.fixture()
+@pytest.fixture
 def base() -> ZMQBase:
     """Create a ZMQBase with MagicMock socket and context."""
     b = object.__new__(ZMQBase)

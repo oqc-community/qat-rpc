@@ -10,8 +10,9 @@ context managers that yield mutable outcome objects.
 import abc
 import inspect
 import re
+from collections.abc import Callable
 from inspect import getmembers, ismethod
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from prometheus_client import Counter, Gauge, start_http_server
 from qat.purr.utils.logger import get_default_logger
@@ -87,7 +88,7 @@ class NullReceiverBackend(ReceiverBackend):
     """No-op backend for testing or when metrics are disabled."""
 
     def __init__(self):
-        super(NullReceiverBackend, self).__init__()
+        super().__init__()
 
     def receiver_status(self, outcome: BinaryMutableOutcome) -> None: ...
 
@@ -104,7 +105,7 @@ class PrometheusReceiver(ReceiverBackend):
     """Prometheus-backed metrics receiver."""
 
     def __init__(self, port: int = PROMETHEUS_PORT):
-        super(PrometheusReceiver, self).__init__()
+        super().__init__()
         start_http_server(port)
         log.info(f"Starting Prometheus metrics exporter on port {port}.")
 
@@ -189,7 +190,7 @@ class MetricFieldWrapper(Generic[T]):
         try:
             self.callable(self.outcome)
         except Exception as ex:
-            log.warning(f"Metric setting errored {str(ex)}")
+            log.warning(f"Metric setting errored {ex!s}")
 
 
 class MetricExporter:
@@ -229,7 +230,7 @@ class MetricExporter:
                 raise ValueError(
                     f"Receiver must have one non-self argument on each "
                     f"function. Found {nargs} while evaluating {func_name}"
-                    f" on {str(type(backend))}"
+                    f" on {type(backend)!s}"
                 )
             # build no-arg setting functions on this matching backend public name
             setattr(self, func_name, decorate(func))

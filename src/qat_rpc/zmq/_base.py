@@ -57,7 +57,7 @@ class ZMQBase:
                 if timeout is not None:
                     raise TimeoutError(
                         f"Receiving from {self.address} timed out after {timeout} seconds."
-                    )
+                    ) from e
                 return None
 
             if e.errno == zmq.ETERM:
@@ -79,7 +79,7 @@ class ZMQBase:
             if e.errno == zmq.EAGAIN:
                 raise TimeoutError(
                     f"Sending on {self.address} timed out after {self._timeout} seconds."
-                )
+                ) from e
 
             if e.errno == zmq.ETERM:
                 log.info("Context terminated, cannot send message.")

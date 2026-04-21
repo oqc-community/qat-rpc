@@ -127,8 +127,37 @@ line-length = 92
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I", "N", "TRY", "FAST"]
-ignore = ["TRY003"] # Requires refactor of exception handling which is out of scope for now
+extend-select = [
+  "B",     # flake8-bugbear
+  "BLE",   # flake8-blind-except
+  "E",     # pycodestyle errors
+  "F",     # pyflakes
+  "I",     # isort
+  "N",     # pep8-naming
+  "PT",    # flake8-pytest-style
+  "RSE",   # flake8-raise
+  "S",     # flake8-bandit (security)
+  "TRY",   # tryceratops (exception handling)
+  "UP",    # pyupgrade (modern Python syntax)
+  "W",     # pycodestyle warnings
+  "C4",    # flake8-comprehensions
+  "RUF",   # ruff-specific rules
+  "T20",   # flake8-print (no stray prints in library code)
+]
+ignore = [
+  "TRY003",  # Requires refactor of exception handling which is out of scope for now
+  "PT019",   # Fixture-without-value - fixtures are used for their return value
+  "PT011",   # pytest-raises-too-broad - match= overkill for simple validation tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # assert is expected in tests
+"tests/integration/test_zmq.py" = ["E501", "BLE001"]  # QIR string literals; intentional catch-all in stress test
+"src/qat_rpc/zmq/client_cli.py" = ["T201"]  # CLI prints results to stdout
+"src/qat_rpc/zmq/qat_commands.py" = ["E402"]  # import after deprecation warning
+"src/qat_rpc/zmq/receiver.py" = ["E402"]  # import after deprecation warning
+"src/qat_rpc/zmq/wrappers.py" = ["E402"]  # import after deprecation warning
+"src/qat_rpc/metrics.py" = ["BLE001"]  # intentional catch-all for metric reporting
 
 [tool.ruff.format]
 docstring-code-format = true

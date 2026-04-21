@@ -9,7 +9,7 @@ import pytest
 import qat_rpc.zmq.client_cli as client_cli
 
 
-@pytest.fixture()
+@pytest.fixture
 def fake_client(monkeypatch):
     """Patch ZMQClient with a MagicMock, reset between tests."""
     mock_cls = MagicMock()

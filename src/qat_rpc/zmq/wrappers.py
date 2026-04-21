@@ -17,7 +17,7 @@ _warnings.warn(
     stacklevel=2,
 )
 
-from qat_rpc.zmq.client import ZMQClient  # noqa: E402
-from qat_rpc.zmq.server import ZMQServer  # noqa: E402
+from qat_rpc.zmq.client import ZMQClient
+from qat_rpc.zmq.server import ZMQServer
 
 __all__ = ["ZMQClient", "ZMQServer"]
