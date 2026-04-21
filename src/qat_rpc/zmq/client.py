@@ -68,10 +68,10 @@ class ZMQClient(ZMQBase):
     ) -> dict[str, Any]:
         """Compile and execute a program.
 
+        Pipeline arguments are optional; the server uses its defaults when omitted.
+
         :param program: An OpenQASM 2.0, OpenQASM 3.0, or QIR program.
             Accepts a source string (QASM / QIR text) or raw QIR bitcode bytes.
-
-        Pipeline arguments are optional; the server uses its defaults when omitted.
         """
         return self._send_and_receive(
             ProgramRequest(
