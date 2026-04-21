@@ -121,8 +121,8 @@ class QATServiceHandler:
         """Return qubit couplings from the active hardware model.
 
         For PuRR ``QuantumHardwareModel`` we use ``qubit_direction_couplings``.
-        For pydantic ``PhysicalHardwareModel`` we currently project directed
-        edges from ``logical_connectivity``.
+        For pydantic ``PhysicalHardwareModel`` we use ``logical_connectivity``
+        which is its analogue - exposing only calibrated coupling directions.
         """
         hardware = self._get_hardware(pipeline)
         if isinstance(hardware, QuantumHardwareModel):
@@ -161,10 +161,6 @@ class QATServiceHandler:
     def qpu_info(self, pipeline: str | None = None) -> dict[str, Any]:
         """Return aggregate QPU hardware information via OpenPulse."""
         hardware = self._get_hardware(pipeline)
-        # Currently there is an issue with Pydantic Echo pipelines returning
-        # 1s instead of 0s. As a result we use the PuRR echo pipeline, which
-        # uses a QuantumHardwareModel and requires a different method for
-        # extracting the OpenPulse features.
         if isinstance(hardware, QuantumHardwareModel):
             features = PurrOpenPulseFeatures()
             features.for_hardware(hardware)
@@ -176,7 +172,7 @@ class QATServiceHandler:
 
     def handle(self, request: Request) -> Response:
         """Dispatch a ``Request`` to the corresponding operation and return its response."""
-        log.info(f"Handling request: {request}")
+        log.info(f"Handling request: {type(request).__name__}, {request}")
         match request:
             case ProgramRequest(
                 program=program,
