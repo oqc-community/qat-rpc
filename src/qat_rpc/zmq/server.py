@@ -52,10 +52,11 @@ class ZMQServer(ZMQBase):
         server_port: int = RECEIVER_PORT,
         qat_config_path: Path | None = None,
         timeout: float = 30.0,
+        compile_enabled: bool = True,
     ):
         super().__init__(socket_type=zmq.REP, port=server_port, timeout=timeout)
         self._socket.bind(self.address)
-        self._handler = QATServiceHandler(metric_exporter, qat_config_path)
+        self._handler = QATServiceHandler(metric_exporter, qat_config_path, compile_enabled)
         self._running = False
 
     @property
@@ -299,10 +300,16 @@ def main() -> None:
     # Resolve QAT config path from environment or use default
     qat_config_path = resolve_qat_config_path(os.getenv("QAT_CONFIG_PATH"))
 
+    # Feature flag: enable/disable compile and execute endpoints
+    compile_enabled = os.getenv("ENABLE_COMPILE_ENDPOINT", "true").lower() == "true"
+    if not compile_enabled:
+        log.info("Compile and execute endpoints are disabled.")
+
     server = ZMQServer(
         metric_exporter=metric_exporter,
         server_port=receiver_port,
         qat_config_path=qat_config_path,
+        compile_enabled=compile_enabled,
     )
 
     log.info(f"QAT RPC Server Starting, address: {server.address}")

@@ -46,9 +46,11 @@ class QATServiceHandler:
         self,
         metric_exporter: MetricExporter,
         qat_config_path: Path | None = None,
+        compile_enabled: bool = True,
     ):
         self._metric = metric_exporter
         self._qat = QAT(qat_config_path)
+        self._compile_enabled = compile_enabled
 
     @property
     def metric(self) -> MetricExporter:
@@ -183,6 +185,8 @@ class QATServiceHandler:
                 return self.run_program(program, config, compile_pipeline, execute_pipeline)
 
             case CompileRequest(program=program, config=config, pipeline=pipeline):
+                if not self._compile_enabled:
+                    raise NotImplementedError("Compile endpoint is disabled.")
                 return self.compile(program, config, pipeline)
 
             case ExecuteRequest(package=package, config=config, pipeline=pipeline):

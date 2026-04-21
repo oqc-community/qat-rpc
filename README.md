@@ -27,6 +27,7 @@ The server is configured through environment variables:
 | `RECEIVER_PORT` | ZMQ server port | `5556` |
 | `METRICS_PORT` | Prometheus exporter port | `9250` |
 | `QAT_CONFIG_PATH` | Path to QAT config file | None - runs in echo mode |
+| `ENABLE_COMPILE_ENDPOINT` | Enable compile/execute endpoints | `true` |
 
 ### Using the client
 

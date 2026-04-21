@@ -9,7 +9,9 @@ import pytest
 from compiler_config.config import CompilerConfig
 
 from qat_rpc.models import (
+    CompileRequest,
     CouplingsRequest,
+    ExecuteRequest,
     ProgramRequest,
     QpuInfoRequest,
     QubitInfoRequest,
@@ -172,3 +174,35 @@ class TestGracefulKill:
 
         assert getsignal(SIGINT) == original_sigint_handler
         assert getsignal(SIGTERM) == original_sigterm_handler
+
+
+class TestCompileEndpointFeatureFlag:
+    @pytest.fixture
+    def handler(self):
+        """QATServiceHandler with QAT mocked out, compile disabled."""
+        from qat_rpc.handler import QATServiceHandler
+
+        handler = QATServiceHandler.__new__(QATServiceHandler)
+        handler._metric = MagicMock()
+        handler._qat = MagicMock()
+        handler._compile_enabled = False
+        return handler
+
+    def test_compile_request_blocked_when_disabled(self, handler):
+        request = CompileRequest(program="OPENQASM 2.0;", config=CompilerConfig())
+        with pytest.raises(NotImplementedError, match="Compile endpoint is disabled"):
+            handler.handle(request)
+
+    def test_execute_request_allowed_when_compile_disabled(self, handler):
+        """ExecuteRequest is not gated by the compile flag."""
+        handler.execute = MagicMock(return_value={"results": {}})
+        request = ExecuteRequest(package="pkg", config=CompilerConfig())
+        handler.handle(request)
+        handler.execute.assert_called_once()
+
+    def test_program_request_allowed_when_compile_disabled(self, handler):
+        """ProgramRequest (compile+execute) is not gated by the flag."""
+        handler.run_program = MagicMock(return_value={"results": {}})
+        request = ProgramRequest(program="OPENQASM 2.0;", config=CompilerConfig())
+        handler.handle(request)
+        handler.run_program.assert_called_once()
