@@ -19,7 +19,7 @@ from qat.purr.utils.logger import get_default_logger
 
 log = get_default_logger()
 
-PROMETHEUS_PORT = 9250
+DEFAULT_PROMETHEUS_PORT = 9250
 
 
 class IncrementMutableOutcome:
@@ -104,7 +104,7 @@ class NullReceiverBackend(ReceiverBackend):
 class PrometheusReceiver(ReceiverBackend):
     """Prometheus-backed metrics receiver."""
 
-    def __init__(self, port: int = PROMETHEUS_PORT):
+    def __init__(self, port: int = DEFAULT_PROMETHEUS_PORT):
         super().__init__()
         start_http_server(port)
         log.info(f"Starting Prometheus metrics exporter on port {port}.")

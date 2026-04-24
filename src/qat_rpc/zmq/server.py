@@ -20,7 +20,11 @@ from compiler_config.config import CompilerConfig
 from qat.purr.utils.logger import get_default_logger
 
 from qat_rpc.handler import QATServiceHandler
-from qat_rpc.metrics import PROMETHEUS_PORT, MetricExporter, PrometheusReceiver
+from qat_rpc.metrics import (
+    DEFAULT_PROMETHEUS_PORT,
+    MetricExporter,
+    PrometheusReceiver,
+)
 from qat_rpc.models import (
     CouplingsRequest,
     ProgramRequest,
@@ -291,7 +295,7 @@ def main() -> None:
     metrics_port = validate_port(
         os.getenv("METRICS_PORT"),
         "metrics exporter",
-        PROMETHEUS_PORT,
+        DEFAULT_PROMETHEUS_PORT,
         excluded_ports={receiver_port},
     )
 

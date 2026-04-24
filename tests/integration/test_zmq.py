@@ -9,7 +9,11 @@ from pathlib import Path
 import pytest
 from compiler_config.config import CompilerConfig
 
-from qat_rpc.metrics import PROMETHEUS_PORT, MetricExporter, PrometheusReceiver
+from qat_rpc.metrics import (
+    DEFAULT_PROMETHEUS_PORT,
+    MetricExporter,
+    PrometheusReceiver,
+)
 from qat_rpc.zmq.client import ZMQClient
 from qat_rpc.zmq.server import ZMQServer
 
@@ -66,7 +70,7 @@ attributes #0 = { "EntryPoint" "requiredQubits"="2" "requiredResults"="2" }
 def _server():
     """Start a real ZMQServer in a daemon thread for the module."""
     server = ZMQServer(
-        metric_exporter=MetricExporter(backend=PrometheusReceiver(PROMETHEUS_PORT)),
+        metric_exporter=MetricExporter(backend=PrometheusReceiver(DEFAULT_PROMETHEUS_PORT)),
     )
     server_thread = threading.Thread(target=server.run, daemon=True)
     server_thread.start()
