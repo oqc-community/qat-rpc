@@ -1,59 +1,222 @@
-[tool.poetry]
+[project]
 name = "qat-rpc"
-version = "0.6.0"
+version = "1.0.0"
 description = "RPC tooling for OQC QAT."
-authors = ["Kajsa Eriksson Rosenqvist <keriksson.rosenqvist@oxfordquantumcircuits.com>"]
+authors = [
+    { name = "Kajsa Eriksson Rosenqvist", email = "keriksson.rosenqvist@oqc.tech" },
+    { name = "Kyle Hutchings", email = "khutchings@oqc.tech" },
+]
 readme = "README.md"
 license = "BSD-3-Clause"
-packages = [
-    { include = "qat_rpc", from = "src/QAT_RPC/" }
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "pydantic>=2.0",
+    "prometheus-client>=0.20.0",
+    "pyzmq>=26.1.0",
+    "qat-compiler>=3.0.0,<4.0.0",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-pyzmq = "^26.1.0"
-prometheus-client="^0.20.0"
-qat-compiler = "^2.3.0"
+[project.scripts]
+qat_comexe = "qat_rpc.zmq.client_cli:qat_run"
+qat_server = "qat_rpc.zmq.server:main"
+
+[tool.poetry]
+packages = [
+    { include = "qat_rpc", from = "src/" }
+]
 
 [tool.poetry.group.dev.dependencies]
-coverage = "^6.3.2"
-pytest-cov = "~=2.10.1"
-autoflake = "^2.2.0"
-isort = "^5.13.2"
-black = "24.3.0"
-pre-commit = "^3.2.0"
-pip-audit = "^2.4.5"
-pip-licenses = "^5.0.0"
+bandit = ">=1.8.0"
+coverage = ">=7.0.0"
+deptry = ">=0.23.0"
+import-linter = ">=2.0"
+pip-audit = ">=2.10.0"
+pip-licenses = ">=5.0.0"
+poethepoet = ">=0.36.0"
+pyright = { extras = ["nodejs"], version = ">=1.1.402" }
+pytest = ">=8.0.0"
+pytest-cov = ">=4.0.0"
+pytest-mock = ">=3.14.0"
+ruff = ">=0.12.0"
+pre-commit = ">=4.5.1"
 
-[tool.autoflake]
-remove-all-unused-imports = true
-ignore-init-module-imports = true
-ignore-pass-after-docstring = true
-in-place = true
-recursive = true
+[tool.poe.tasks.fix]
+help = "Fix code to adhere with project standards"
+shell = "ruff format && ruff check --fix"
 
-[tool.isort]
-py_version = 39
-profile = "black"
-line_length = 92
+[tool.poe.tasks.lint]
+cmd = "ruff check"
+help = "Lint all files against project standards"
+
+[tool.poe.tasks.format]
+cmd = "ruff format --check"
+help = "Check code formatting against project standards"
+
+[tool.poe.tasks.types]
+cmd = "pyright ."
+help = "Type checking"
+
+[tool.poe.tasks.test]
+cmd = "pytest"
+help = "Run tests"
+
+[tool.poe.tasks.vuln]
+help = "Static analysis for vulnerabilities"
+sequence = ["bandit", "pipaudit"]
+
+[tool.poe.tasks.bandit]
+cmd = "bandit -c pyproject.toml -r src/"
+help = "Search for common security issues in Python code"
+
+[tool.poe.tasks.pipaudit]
+# Ignoring CVE-2026-4539 - No fix currently available
+cmd = """
+pip-audit --desc \
+  --ignore-vuln CVE-2026-4539
+"""
+help = "Scan Python environment for packages with known vulnerabilities"
+
+[tool.poe.tasks.licenses]
+cmd = "pip-licenses"
+help = "Validate compliance with software license list of Python packages installed"
+
+[tool.poe.tasks.deptry]
+cmd = "deptry ."
+help = "Check for module import problems"
+
+[tool.poe.tasks.importlinter]
+cmd = "lint-imports"
+help = "Ensure import contracts are enforced"
+
+[tool.poe.tasks.deps]
+help = "Enforce sensible management of dependencies"
+sequence = ["deptry", "importlinter"]
+
+[tool.poe.tasks.checks]
+help = "Runs all checks prior to PR and CI pipeline run"
+sequence = ["format", "lint", "types", "deps", "licenses", "vuln", "test"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+addopts = [
+    "-v",
+    "--cov=qat_rpc",
+    "--cov-report=term-missing",
+    "--cov-report=xml:coverage.xml",
+    "--cov-report=html:htmlcov",
+    "--cov-fail-under=75",
+]
+
+[tool.coverage.run]
+source = ["qat_rpc"]
+omit = [ # These 3 files are just shims to protect backwards compatibility
+    "src/qat_rpc/zmq/wrappers.py",
+    "src/qat_rpc/zmq/receiver.py",
+    "src/qat_rpc/zmq/qat_commands.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "\\.\\.\\.",
+]
+
+[tool.ruff]
+line-length = 92
+target-version = "py310"
+
+[tool.ruff.lint]
+extend-select = [
+  "B",     # flake8-bugbear
+  "BLE",   # flake8-blind-except
+  "E",     # pycodestyle errors
+  "F",     # pyflakes
+  "I",     # isort
+  "N",     # pep8-naming
+  "PT",    # flake8-pytest-style
+  "RSE",   # flake8-raise
+  "S",     # flake8-bandit (security)
+  "TRY",   # tryceratops (exception handling)
+  "UP",    # pyupgrade (modern Python syntax)
+  "W",     # pycodestyle warnings
+  "C4",    # flake8-comprehensions
+  "RUF",   # ruff-specific rules
+  "T20",   # flake8-print (no stray prints in library code)
+]
+ignore = [
+  "TRY003",  # Requires refactor of exception handling which is out of scope for now
+  "PT019",   # Fixture-without-value - fixtures are used for their return value
+  "PT011",   # pytest-raises-too-broad - match= overkill for simple validation tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # assert is expected in tests
+"tests/integration/test_zmq.py" = ["E501", "BLE001"]  # QIR string literals; intentional catch-all in stress test
+"src/qat_rpc/zmq/client_cli.py" = ["T201"]  # CLI prints results to stdout
+"src/qat_rpc/zmq/qat_commands.py" = ["E402"]  # import after deprecation warning
+"src/qat_rpc/zmq/receiver.py" = ["E402"]  # import after deprecation warning
+"src/qat_rpc/zmq/wrappers.py" = ["E402"]  # import after deprecation warning
+"src/qat_rpc/metrics.py" = ["BLE001"]  # intentional catch-all for metric reporting
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pyright]
+exclude = ["**/.venv", "**/__pycache__", "**/tests"]
+ignore = ["src/qat_rpc/metrics.py"]  # TODO: Fix type errors as part of metrics refactor
+pythonPlatform = "Linux"
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+
+[tool.deptry]
+extend_exclude = ["src/tests"]
 known_first_party = ["qat_rpc"]
 
-[tool.black]
-line-length = 92
-target-version = ["py310", "py311", "py312"]
+[tool.deptry.per_rule_ignores]
+DEP002 = ["certifi", "cryptography", "idna", "jinja2", "pillow", "setuptools", "urllib3"]
+DEP003 = ["compiler_config"]
 
 [tool.pip-licenses]
 ignore-packages = [
   "docutils",
   "psycopg2",
+  "PySquashfsImage",
   "qat-rpc"
 ]
 fail-on = "GNU General Public License (GPL);GNU Library or Lesser General Public License (LGPL)"
 
-[tool.poetry.scripts]
-format-code = "poetry_scripts:format_code"
-qat_comexe="qat_rpc.zmq.qat_commands:qat_run"
+[tool.importlinter]
+root_packages = ["qat_rpc"]
+
+[[tool.importlinter.contracts]]
+name = "Models must not import from other internal modules"
+type = "forbidden"
+source_modules = ["qat_rpc.models"]
+forbidden_modules = ["qat_rpc.handler", "qat_rpc.zmq", "qat_rpc.metrics"]
+
+[[tool.importlinter.contracts]]
+name = "Metrics must not import from other internal modules"
+type = "forbidden"
+source_modules = ["qat_rpc.metrics"]
+forbidden_modules = ["qat_rpc.handler", "qat_rpc.zmq", "qat_rpc.models"]
+
+[[tool.importlinter.contracts]]
+name = "Handler must not import from zmq transport layer"
+type = "forbidden"
+source_modules = ["qat_rpc.handler"]
+forbidden_modules = ["qat_rpc.zmq"]
+
+[[tool.importlinter.contracts]]
+name = "Layered architecture"
+type = "layers"
+layers = [
+    "qat_rpc.zmq",
+    "qat_rpc.handler",
+    "qat_rpc.models | qat_rpc.metrics",
+]
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"

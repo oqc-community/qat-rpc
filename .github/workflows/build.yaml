@@ -25,10 +25,10 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         id: setup-python
         with:
           python-version: ${{ matrix.python }}
@@ -36,14 +36,26 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      - name: Formatting tests
-        run: |
-          poetry install --sync --with dev
-          poetry run black --check .
-          poetry run isort --check .
-          poetry run autoflake --check .
-          poetry run pip-audit --desc
-          poetry run pip-licenses
+      - name: Install dependencies
+        run: poetry sync
+
+      - name: Formatting
+        run: poetry run poe format
+
+      - name: Linting
+        run: poetry run poe lint
+
+      - name: Type checking
+        run: poetry run poe types
+
+      - name: Dependency checks
+        run: poetry run poe deps
+
+      - name: License compliance
+        run: poetry run poe licenses
+
+      - name: Security scan
+        run: poetry run poe vuln
 
   unit-tests:
     name: Unit Tests
@@ -55,21 +67,31 @@ jobs:
     defaults:
       run:
         shell: bash
-        
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python 3.x
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      - name: Unit tests
-        run: |
-          poetry install --sync
-          poetry run pytest -v src/tests/
+      - name: Install dependencies
+        run: poetry sync
+
+      - name: Tests with coverage
+        run: poetry run poe test
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report-${{ matrix.python }}
+          path: |
+            coverage.xml
+            htmlcov/
 
